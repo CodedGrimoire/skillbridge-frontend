@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Central axios instance for the Express API.
 const api = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: "http://localhost:5001/api",
 });
 
 // Attach JWT from localStorage to every request (browser only).
@@ -22,8 +22,13 @@ api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (typeof window !== "undefined" && err?.response?.status === 401) {
+      const path = window.location.pathname;
+      // Avoid redirect loop when already on auth pages
+      const onAuthPage = path.startsWith("/login") || path.startsWith("/register");
       localStorage.removeItem("token");
-      window.location.href = "/login";
+      if (!onAuthPage) {
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(err);
   }

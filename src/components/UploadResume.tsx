@@ -29,7 +29,7 @@ export default function UploadResume({ onUploaded }: Props) {
           if (evt.total) setProgress(Math.round((evt.loaded / evt.total) * 100));
         },
       });
-      setMessage("Upload successful");
+      setMessage("Upload successful!");
       onUploaded?.(res.data);
     } catch (err: any) {
       setError(err?.response?.data?.message || "Upload failed");
@@ -90,7 +90,7 @@ export default function UploadResume({ onUploaded }: Props) {
         </div>
       )}
 
-      {message && <p className="text-green-400 text-sm">{message}</p>}
+      {message && <p className="text-green-400 text-sm animate-pulse">{message}</p>}
       {error && <p className="text-red-400 text-sm">{error}</p>}
     </div>
   );

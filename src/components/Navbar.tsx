@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Sparkles } from "lucide-react";
 import classNames from "classnames";
 
 const navItems = [
@@ -17,9 +17,12 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-30 bg-slate-950/70 backdrop-blur border-b border-slate-800">
+    <nav className="sticky top-0 z-30 bg-slate-950/80 backdrop-blur border-b border-slate-800">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <Link href="/" className="text-xl font-semibold text-accent">
+        <Link href="/" className="flex items-center gap-2 text-xl font-semibold">
+          <span className="h-9 w-9 rounded-lg bg-gradient-to-br from-accent to-accent2 flex items-center justify-center text-slate-950 shadow-md">
+            <Sparkles className="h-5 w-5" />
+          </span>
           SkillGap AI
         </Link>
 
