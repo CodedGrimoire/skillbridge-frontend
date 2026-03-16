@@ -3,9 +3,11 @@
 import { useState } from "react";
 import UploadResume from "../../components/UploadResume";
 import { useRequireAuth } from "../../hooks/useRequireAuth";
+import { useRouter } from "next/navigation";
 
 export default function UploadPage() {
   const { loading } = useRequireAuth();
+  const router = useRouter();
   const [detected, setDetected] = useState<string[]>([]);
   const [preview, setPreview] = useState<string>("");
 
@@ -20,6 +22,10 @@ export default function UploadPage() {
         onUploaded={(data) => {
           setDetected(data.detectedSkills || []);
           setPreview(data.preview || "");
+          if (data.resumeId) {
+            // Redirect to analysis page to pick a role and run analysis
+            router.push(`/analysis?resumeId=${data.resumeId}`);
+          }
         }}
       />
 

@@ -10,6 +10,8 @@ const navItems = [
   { href: "/", label: "Home" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/upload", label: "Upload Resume" },
+  { href: "/market", label: "Market Intelligence" },
+  { href: "/simulator", label: "Career Simulator" },
 ];
 
 export default function Navbar() {

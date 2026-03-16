@@ -6,6 +6,7 @@ import DashboardStats from "../../components/DashboardStats";
 import LoadingCard from "../../components/LoadingCard";
 import { useRequireAuth } from "../../hooks/useRequireAuth";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import Card from "../../components/ui/Card";
 
 type Profile = { id: string; name: string; email: string; role: string; createdAt: string };
 
@@ -14,6 +15,7 @@ export default function DashboardPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [skills, setSkills] = useState<string[]>([]);
   const [latest, setLatest] = useState<any>(null);
+  const [trending, setTrending] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -28,6 +30,9 @@ export default function DashboardPage() {
         setProfile(p.data);
         setSkills(s.data.skills || []);
         setLatest(l.data.analysis);
+        // fetch trending in parallel
+        const trendRes = await api.get("/market/trending-skills");
+        setTrending(trendRes.data.trendingSkills || []);
       } catch (err: any) {
         setError(err?.response?.data?.message || "Failed to load dashboard");
       } finally {
@@ -120,6 +125,21 @@ export default function DashboardPage() {
         ) : (
           <p className="text-slate-400 text-sm">No analyses yet.</p>
         )}
+      </div>
+
+      <div className="space-y-3">
+        <h2 className="text-xl font-semibold">Market Trending Skills</h2>
+        <Card className="p-4 flex flex-wrap gap-3">
+          {trending.length ? (
+            trending.map((t) => (
+              <span key={t.skill} className="px-3 py-1 rounded-full bg-accent/10 text-accent text-sm">
+                {t.skill} · {t.demandScore}
+              </span>
+            ))
+          ) : (
+            <p className="text-slate-400 text-sm">No market data yet.</p>
+          )}
+        </Card>
       </div>
     </div>
   );
