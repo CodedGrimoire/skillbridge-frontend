@@ -152,6 +152,21 @@ export default function AnalysisPage() {
                 {result.recommendations || "No recommendations available."}
               </p>
             </Card>
+            <Card className="p-6 space-y-3">
+              <h2 className="text-xl font-semibold">Recommended Next Skills (ROI)</h2>
+              {result.recommendedNextSkills?.length ? (
+                <ul className="space-y-2 text-sm text-slate-200">
+                  {result.recommendedNextSkills.slice(0, 5).map((r: any) => (
+                    <li key={r.skill} className="flex justify-between">
+                      <span>{r.skill}</span>
+                      <span className="text-accent">{r.roiScore}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-slate-400 text-sm">Run analysis to see ROI-ranked suggestions.</p>
+              )}
+            </Card>
           </div>
         )}
       </div>
