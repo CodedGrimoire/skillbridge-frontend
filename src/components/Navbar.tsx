@@ -12,6 +12,7 @@ const navItems = [
   { href: "/upload", label: "Upload Resume" },
   { href: "/market", label: "Market Intelligence" },
   { href: "/simulator", label: "Career Simulator" },
+  { href: "/career-path", label: "Career Paths" },
 ];
 
 export default function Navbar() {
