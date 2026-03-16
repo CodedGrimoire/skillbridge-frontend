@@ -1,6 +1,6 @@
 import axios from "axios";
 
-// Axios instance pointing to the Express API; adjust baseURL for deployment.
+// Central axios instance for the Express API.
 const api = axios.create({
   baseURL: "http://localhost:5000/api",
 });
@@ -16,5 +16,17 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Basic 401 handler: remove stale token and bounce to login.
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (typeof window !== "undefined" && err?.response?.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    }
+    return Promise.reject(err);
+  }
+);
 
 export default api;

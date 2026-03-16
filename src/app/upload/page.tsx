@@ -2,10 +2,16 @@
 
 import { useState } from "react";
 import UploadResume from "../../components/UploadResume";
+import { useRequireAuth } from "../../hooks/useRequireAuth";
 
 export default function UploadPage() {
+  const { loading } = useRequireAuth();
   const [detected, setDetected] = useState<string[]>([]);
   const [preview, setPreview] = useState<string>("");
+
+  if (loading) {
+    return <div className="max-w-4xl mx-auto px-4 py-12 text-slate-300">Loading...</div>;
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12 space-y-6">

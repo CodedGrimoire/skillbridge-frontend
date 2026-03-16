@@ -2,19 +2,34 @@
 
 import { useEffect, useState } from "react";
 import api from "../../services/api";
+import { useRequireAuth } from "../../hooks/useRequireAuth";
+import LoadingCard from "../../components/LoadingCard";
 
 type Analysis = { role: string; matchScore: number; createdAt: string };
 
 export default function AnalysisPage() {
+  const { loading: authLoading } = useRequireAuth();
   const [analyses, setAnalyses] = useState<Analysis[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading) return;
     api
       .get("/dashboard/analyses")
       .then((res) => setAnalyses(res.data.analyses || []))
-      .catch((err) => setError(err?.response?.data?.message || "Failed to load analyses"));
-  }, []);
+      .catch((err) => setError(err?.response?.data?.message || "Failed to load analyses"))
+      .finally(() => setLoading(false));
+  }, [authLoading]);
+
+  if (authLoading || loading) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-12 space-y-3">
+        <LoadingCard lines={2} />
+        <LoadingCard lines={2} />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12 space-y-4">

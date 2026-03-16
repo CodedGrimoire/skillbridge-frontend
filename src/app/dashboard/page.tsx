@@ -1,16 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import api from "../../services/api";
 import DashboardStats from "../../components/DashboardStats";
+import LoadingCard from "../../components/LoadingCard";
+import { useRequireAuth } from "../../hooks/useRequireAuth";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 type Profile = { id: string; name: string; email: string; role: string; createdAt: string };
 
 export default function DashboardPage() {
+  const { loading: authLoading } = useRequireAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [skills, setSkills] = useState<string[]>([]);
   const [latest, setLatest] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
@@ -25,10 +30,31 @@ export default function DashboardPage() {
         setLatest(l.data.analysis);
       } catch (err: any) {
         setError(err?.response?.data?.message || "Failed to load dashboard");
+      } finally {
+        setLoading(false);
       }
     };
-    load();
-  }, []);
+    if (!authLoading) load();
+  }, [authLoading]);
+
+  const barData = useMemo(() => {
+    const matched = latest?.matchedSkills?.length ?? 0;
+    const missing = latest?.missingSkills?.length ?? 0;
+    return [
+      { name: "Matched", value: matched },
+      { name: "Missing", value: missing },
+    ];
+  }, [latest]);
+
+  if (authLoading || loading) {
+    return (
+      <div className="max-w-6xl mx-auto px-4 py-12 space-y-4">
+        <LoadingCard lines={2} />
+        <LoadingCard lines={3} />
+        <LoadingCard lines={4} />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-12 space-y-6">
@@ -70,6 +96,20 @@ export default function DashboardPage() {
               matchedSkills={latest.matchedSkills ?? []}
               missingSkills={latest.missingSkills ?? []}
             />
+            <div className="card p-6 space-y-4">
+              <h3 className="text-lg font-semibold">Coverage</h3>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={barData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
+                    <XAxis dataKey="name" stroke="#cbd5e1" />
+                    <YAxis stroke="#cbd5e1" allowDecimals={false} />
+                    <Tooltip />
+                    <Bar dataKey="value" fill="#38bdf8" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
             <div className="card p-6 space-y-3">
               <h3 className="text-lg font-semibold">AI Recommendations</h3>
               <p className="text-slate-200 text-sm whitespace-pre-wrap">
