@@ -16,7 +16,8 @@ export default function DeleteSkillModal({ skill, onCancel, onConfirm }: Props) 
       <div className="w-full max-w-md rounded-lg bg-white dark:bg-gray-900 shadow-xl p-6">
         <h3 className="text-lg font-semibold dark:text-white mb-2">Delete Skill</h3>
         <p className="text-sm text-gray-600 dark:text-gray-300">
-          Are you sure you want to delete <span className="font-semibold">{skill.name}</span>?
+          Are you sure you want to delete this skill?{" "}
+          <span className="font-semibold">{skill.name}</span>
         </p>
         <div className="mt-6 flex items-center justify-end gap-3">
           <button
