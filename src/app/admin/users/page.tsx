@@ -24,7 +24,7 @@ export default function AdminUsersPage() {
 
   return (
     <AdminLayout title="User List">
-      <div className="max-w-6xl mx-auto space-y-4">
+      <div className="space-y-6">
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-5 space-y-3">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div>

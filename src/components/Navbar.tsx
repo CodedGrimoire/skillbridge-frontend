@@ -18,9 +18,9 @@ export default function Navbar() {
   const navItems =
     user?.role === "ADMIN"
       ? [
+          { href: "/", label: "Home" },
           { href: "/admin/dashboard", label: "Dashboard" },
           { href: "/admin/users", label: "User List" },
-          { href: "/admin/job-skills", label: "Job Skill Set" },
         ]
       : [
           { href: "/", label: "Home" },

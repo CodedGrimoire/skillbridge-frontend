@@ -62,7 +62,8 @@ export default function AdminDashboardPage() {
 
   return (
     <AdminLayout title="Mentor Dashboard">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard label="Pending Requests" value={pending.length} />
         <StatCard label="Active Mentees" value={accepted.length} />
         <StatCard
@@ -71,9 +72,9 @@ export default function AdminDashboardPage() {
             profile?.rating ? `${profile.rating.toFixed(1)} ★ (${profile.reviewsCount ?? 0})` : "—"
           }
         />
-      </div>
+        </div>
 
-      <div className="grid lg:grid-cols-2 gap-6 mt-6">
+        <div className="grid lg:grid-cols-2 gap-6">
         <CardBlock title="Incoming Requests" subtitle="Respond to new mentees">
           {pending.length === 0 && <EmptyMsg text="No pending requests." />}
           {pending.map((r) => (
@@ -126,9 +127,9 @@ export default function AdminDashboardPage() {
             </div>
           ))}
         </CardBlock>
-      </div>
+        </div>
 
-      <CardBlock className="mt-6" title="Meetings" subtitle="Upcoming and past meetings">
+        <CardBlock title="Meetings" subtitle="Upcoming and past meetings">
         {meetings.length === 0 && <EmptyMsg text="No meetings scheduled." />}
         <div className="grid md:grid-cols-2 gap-3">
           {meetings.map((m) => (
@@ -140,9 +141,9 @@ export default function AdminDashboardPage() {
             </div>
           ))}
         </div>
-      </CardBlock>
+        </CardBlock>
 
-      <CardBlock className="mt-6" title="Jobseekers" subtitle="All users (role: USER)">
+        <CardBlock title="Jobseekers" subtitle="All users (role: USER)">
         {jobseekers.length === 0 && <EmptyMsg text="No jobseekers found." />}
         <div className="grid md:grid-cols-2 gap-3">
           {jobseekers.map((js) => (
@@ -163,7 +164,8 @@ export default function AdminDashboardPage() {
             </div>
           ))}
         </div>
-      </CardBlock>
+        </CardBlock>
+      </div>
     </AdminLayout>
   );
 }

@@ -3,14 +3,14 @@
 import HeroSection from "../components/HeroSection";
 import FeatureSection from "../components/FeatureSection";
 import Link from "next/link";
-import { Upload, BrainCircuit, Rocket, Sparkles } from "lucide-react";
+import { Upload, BrainCircuit, CalendarClock } from "lucide-react";
 import SectionContainer from "../components/ui/SectionContainer";
 import Card from "../components/ui/Card";
 
 const steps = [
-  { title: "Upload Resume", desc: "Drag & drop your PDF resume.", icon: <Upload className="h-5 w-5" /> },
-  { title: "Analyze Skills", desc: "AI extracts skills and gaps instantly.", icon: <BrainCircuit className="h-5 w-5" /> },
-  { title: "Improve Career Path", desc: "Follow a roadmap with curated resources.", icon: <Rocket className="h-5 w-5" /> },
+  { title: "Upload Resume", desc: "Drop your PDF on the dashboard—analysis runs and saves automatically.", icon: <Upload className="h-5 w-5" /> },
+  { title: "Gap + To‑Dos Saved", desc: "AI extracts skills, missing items, and keeps your editable to‑do list and history.", icon: <BrainCircuit className="h-5 w-5" /> },
+  { title: "Mentors & Sessions", desc: "Request mentors, share links, collect ratings/comments, and schedule meetings in-app.", icon: <CalendarClock className="h-5 w-5" /> },
 ];
 
 const testimonials = [
@@ -79,11 +79,11 @@ export default function HomePage() {
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-accent/10 via-transparent to-accent2/10" />
           <h3 className="text-3xl font-semibold">Ready to see your skill gap?</h3>
           <p className="text-slate-300">
-            Upload your resume and instantly get an AI-generated skill gap and learning roadmap.
+            Upload your resume on the dashboard to auto-run analysis, then track your gaps, to-dos, mentors, and meetings in one flow.
           </p>
           <div className="flex justify-center gap-3">
-            <Link href="/upload" className="btn-primary">
-              Analyze My Resume
+            <Link href="/dashboard" className="btn-primary">
+              Go to Dashboard
             </Link>
             <Link href="/login" className="btn-secondary">
               View Demo

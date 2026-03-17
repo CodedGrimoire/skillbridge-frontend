@@ -16,12 +16,11 @@ export default function HeroSection() {
             Analyze Your Career Skill Gap with AI
           </h1>
           <p className="text-slate-300 text-lg">
-            Upload your resume and instantly discover missing skills for your target career path. Get a personalized
-            roadmap and actionable projects to level up faster.
+            Upload once on your dashboard and we auto-run analysis, save every version, surface missing skills, and loop in mentors for ratings, comments, and scheduled sessions.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-            <Link href="/upload">
-              <Button>Analyze My Resume</Button>
+            <Link href="/dashboard">
+              <Button>Go to Dashboard</Button>
             </Link>
             <Link href="/login">
               <Button variant="secondary">View Demo</Button>

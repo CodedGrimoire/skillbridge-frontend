@@ -1,11 +1,11 @@
 import Card from "./ui/Card";
-import { Brain, Target, Sparkles, BarChart3 } from "lucide-react";
+import { Brain, Target, Users, CalendarClock } from "lucide-react";
 
 const features = [
-  { title: "AI Resume Analysis", desc: "Parse your PDF and extract skills instantly.", icon: <Brain className="h-5 w-5" /> },
-  { title: "Skill Gap Detection", desc: "See exactly what’s missing for your target role.", icon: <Target className="h-5 w-5" /> },
-  { title: "Personalized Roadmap", desc: "Learning steps and projects tailored to your gaps.", icon: <Sparkles className="h-5 w-5" /> },
-  { title: "Career Match Score", desc: "Track progress with a clear, AI-driven score.", icon: <BarChart3 className="h-5 w-5" /> },
+  { title: "Auto Resume Intelligence", desc: "Upload once—skills are extracted, scored, and saved to your history automatically.", icon: <Brain className="h-5 w-5" /> },
+  { title: "Gap & To‑Do Tracking", desc: "See missing hard/soft skills with an editable to‑do list that stays in sync across reruns.", icon: <Target className="h-5 w-5" /> },
+  { title: "Mentor Matching", desc: "Invite mentors, share your profile links, and let them rate or comment on your resume.", icon: <Users className="h-5 w-5" /> },
+  { title: "Sessions & Market Pulse", desc: "Schedule meetings and watch trending skills by market demand to guide your roadmap.", icon: <CalendarClock className="h-5 w-5" /> },
 ];
 
 export default function FeatureSection() {
