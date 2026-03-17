@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import AdminLayout from "../../../components/layout/AdminLayout";
 import api from "../../../services/api";
 
@@ -13,7 +14,11 @@ type Request = {
 
 type MentorProfile = { title?: string; bio?: string; rating?: number; reviewsCount?: number };
 
-type SkillProfile = { skills: string[]; missingSkills: { id: string; name: string; status: string }[] };
+type SkillProfile = {
+  user?: { resumeUrl?: string; linkedinUrl?: string; githubUrl?: string; portfolioUrl?: string };
+  skills: string[];
+  missingSkills: { id: string; name: string; status: string }[];
+};
 type AssessmentForm = {
   resumeRating: number;
   linkedinRating: number;
@@ -22,8 +27,10 @@ type AssessmentForm = {
   comment: string;
 };
 type MeetingForm = { scheduledAt: string; meetLink: string; note?: string };
+type Meeting = { id: string; mentorId: string; menteeId: string; scheduledAt: string; meetLink: string; note?: string; status: string };
 
 export default function MentorshipAdminPage() {
+  const params = useSearchParams();
   const [requests, setRequests] = useState<Request[]>([]);
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [profile, setProfile] = useState<SkillProfile | null>(null);
@@ -36,6 +43,7 @@ export default function MentorshipAdminPage() {
     comment: "",
   });
   const [meeting, setMeeting] = useState<MeetingForm>({ scheduledAt: "", meetLink: "", note: "" });
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
 
   const loadRequests = async () => {
     const res = await api.get("/mentor/requests");
@@ -44,6 +52,11 @@ export default function MentorshipAdminPage() {
 
   useEffect(() => {
     loadRequests();
+    api.get("/mentor/meetings").then((res) => setMeetings(res.data || []));
+    const preselect = params.get("userId");
+    if (preselect) {
+      loadUserProfile(preselect);
+    }
   }, []);
 
   const updateStatus = async (id: string, status: string) => {
@@ -83,6 +96,8 @@ export default function MentorshipAdminPage() {
     await api.post("/mentor/meetings", { menteeId: selectedUser, ...meeting });
     alert("Meeting scheduled");
     setMeeting({ scheduledAt: "", meetLink: "", note: "" });
+    const res = await api.get("/mentor/meetings");
+    setMeetings(res.data || []);
   };
 
   return (
@@ -229,6 +244,24 @@ export default function MentorshipAdminPage() {
               </div>
             </div>
           )}
+        </div>
+
+        <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-6 space-y-3">
+          <h2 className="text-xl font-semibold">Meetings</h2>
+          {meetings.length === 0 && <p className="text-sm text-gray-500">No meetings yet.</p>}
+          {meetings.map((m) => (
+            <div
+              key={m.id}
+              className="flex items-center justify-between border border-gray-100 dark:border-gray-800 rounded-lg px-3 py-2"
+            >
+              <div className="text-sm text-gray-400">
+                <p className="font-semibold text-white">{new Date(m.scheduledAt).toLocaleString()}</p>
+                <p>Link: {m.meetLink}</p>
+                {m.note && <p className="italic">Note: {m.note}</p>}
+                <p>Status: {m.status}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </AdminLayout>

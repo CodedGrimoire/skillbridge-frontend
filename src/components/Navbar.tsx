@@ -9,7 +9,7 @@ import classNames from "classnames";
 const navItems = [
   { href: "/", label: "Home" },
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/upload", label: "Upload Resume" },
+  { href: "/dashboard/mentors", label: "Mentors" },
   { href: "/market", label: "Market Intelligence" },
   { href: "/career-path", label: "Career Path & Simulator" },
 ];
@@ -17,6 +17,11 @@ const navItems = [
 export default function Navbar() {
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
+  const demoCreds = [
+    { label: "Demo Mentor", email: "mentor1@example.com", password: "Passw0rd!" },
+    { label: "Demo User 1", email: "user1@example.com", password: "Passw0rd!" },
+    { label: "Demo User 2", email: "user2@example.com", password: "Passw0rd!" },
+  ];
 
   return (
     <nav className="sticky top-0 z-30 bg-slate-950/80 backdrop-blur border-b border-slate-800">
@@ -56,6 +61,9 @@ export default function Navbar() {
             {user ? (
               <>
                 <span className="text-sm text-slate-300">Hi, {user.name}</span>
+                <span className="text-xs px-2 py-1 rounded-full bg-accent/10 text-accent">
+                  {user.role === "ADMIN" ? "Mentor" : "Jobseeker"}
+                </span>
                 <button className="btn-secondary text-sm" onClick={logout}>
                   Logout
                 </button>
@@ -68,6 +76,24 @@ export default function Navbar() {
                 <Link href="/register" className="btn-primary text-sm" onClick={() => setOpen(false)}>
                   Register
                 </Link>
+                <details className="relative">
+                  <summary className="cursor-pointer text-sm text-slate-300">Demo logins</summary>
+                  <div className="absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-800 rounded-lg p-2 space-y-1">
+                    {demoCreds.map((d) => (
+                      <button
+                        key={d.email}
+                        className="w-full text-left text-xs text-white px-2 py-1 rounded hover:bg-slate-800"
+                        onClick={() => {
+                          localStorage.setItem("demo_email", d.email);
+                          localStorage.setItem("demo_password", d.password);
+                          window.location.href = "/login";
+                        }}
+                      >
+                        {d.label}
+                      </button>
+                    ))}
+                  </div>
+                </details>
               </>
             )}
           </div>

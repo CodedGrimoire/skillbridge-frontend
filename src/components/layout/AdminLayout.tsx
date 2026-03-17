@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, ReactNode } from "react";
+import { useState, ReactNode, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
+import { useAuth } from "../../hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 type Props = {
   title?: string;
@@ -11,7 +13,23 @@ type Props = {
 };
 
 export default function AdminLayout({ title, children, onLogout }: Props) {
+  const { user, loading } = useAuth();
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    if (!loading && user && user.role !== "ADMIN") {
+      router.replace("/dashboard");
+    }
+  }, [loading, user, router]);
+
+  if (loading || (user && user.role !== "ADMIN")) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 text-gray-600 dark:text-gray-200">
+        Loading...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex">

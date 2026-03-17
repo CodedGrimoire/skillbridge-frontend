@@ -4,7 +4,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "../../hooks/useAuth";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const schema = z.object({
   email: z.string().email(),
@@ -14,11 +14,20 @@ const schema = z.object({
 export default function LoginPage() {
   const { login } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const [demo, setDemo] = useState<{ email: string; password: string } | null>(null);
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({ resolver: zodResolver(schema) });
+
+  useEffect(() => {
+    const email = localStorage.getItem("demo_email");
+    const password = localStorage.getItem("demo_password");
+    if (email && password) {
+      setDemo({ email, password });
+    }
+  }, []);
 
   const onSubmit = async (data: any) => {
     try {
@@ -40,6 +49,7 @@ export default function LoginPage() {
               className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2"
               type="email"
               {...register("email")}
+              defaultValue={demo?.email}
             />
             {errors.email && <p className="text-red-400 text-sm">{errors.email.message as string}</p>}
           </div>
@@ -49,6 +59,7 @@ export default function LoginPage() {
               className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2"
               type="password"
               {...register("password")}
+              defaultValue={demo?.password}
             />
             {errors.password && <p className="text-red-400 text-sm">{errors.password.message as string}</p>}
           </div>
@@ -56,6 +67,27 @@ export default function LoginPage() {
           <button className="btn-primary w-full" disabled={isSubmitting} type="submit">
             {isSubmitting ? "Signing in..." : "Login"}
           </button>
+          <div className="space-y-2">
+            <p className="text-xs text-slate-400">Demo accounts:</p>
+            {[
+              { label: "Demo Mentor", email: "mentor1@example.com", password: "Passw0rd!" },
+              { label: "Demo User 1", email: "user1@example.com", password: "Passw0rd!" },
+              { label: "Demo User 2", email: "user2@example.com", password: "Passw0rd!" },
+            ].map((d) => (
+              <button
+                key={d.email}
+                type="button"
+                className="w-full text-left text-xs text-slate-200 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700"
+                onClick={() => {
+                  localStorage.setItem("demo_email", d.email);
+                  localStorage.setItem("demo_password", d.password);
+                  setDemo({ email: d.email, password: d.password });
+                }}
+              >
+                {d.label} — {d.email} / {d.password}
+              </button>
+            ))}
+          </div>
         </form>
       </div>
     </div>

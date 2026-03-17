@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import api from "../../services/api";
 import DashboardStats from "../../components/DashboardStats";
 import LoadingCard from "../../components/LoadingCard";
+import UploadResume from "../../components/UploadResume";
 import { useRequireAuth } from "../../hooks/useRequireAuth";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import Card from "../../components/ui/Card";
@@ -34,35 +35,41 @@ export default function DashboardPage() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [links, setLinks] = useState({ resumeUrl: "", linkedinUrl: "", githubUrl: "", portfolioUrl: "" });
   const [linksSaving, setLinksSaving] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState<string | null>(null);
+  const [autoAnalyzing, setAutoAnalyzing] = useState(false);
+
+  const loadDashboard = async () => {
+    try {
+      const [p, s, l, me] = await Promise.all([
+        api.get("/dashboard/profile"),
+        api.get("/dashboard/skills"),
+        api.get("/dashboard/latest-analysis"),
+        api.get("/users/me"),
+      ]);
+      setProfile(p.data);
+      setSkills(s.data.skills || []);
+      setLatest(l.data.analysis);
+      setLinks({
+        resumeUrl: me.data.resumeUrl || "",
+        linkedinUrl: me.data.linkedinUrl || "",
+        githubUrl: me.data.githubUrl || "",
+        portfolioUrl: me.data.portfolioUrl || "",
+      });
+
+      api.get("/market/trending-skills").then((trendRes) => {
+        const payload = trendRes.data.skills || trendRes.data.trendingSkills || [];
+        setTrending(payload);
+      });
+      api.get("/capability/missing-skills").then((res) => setTodos(res.data || []));
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "Failed to load dashboard");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const [p, s, l, me] = await Promise.all([
-          api.get("/dashboard/profile"),
-          api.get("/dashboard/skills"),
-          api.get("/dashboard/latest-analysis"),
-          api.get("/users/me"),
-        ]);
-        setProfile(p.data);
-        setSkills(s.data.skills || []);
-        setLatest(l.data.analysis);
-        setLinks({
-          resumeUrl: me.data.resumeUrl || "",
-          linkedinUrl: me.data.linkedinUrl || "",
-          githubUrl: me.data.githubUrl || "",
-          portfolioUrl: me.data.portfolioUrl || "",
-        });
-
-        api.get("/market/trending-skills").then((trendRes) => setTrending(trendRes.data.trendingSkills || []));
-        api.get("/capability/missing-skills").then((res) => setTodos(res.data || []));
-      } catch (err: any) {
-        setError(err?.response?.data?.message || "Failed to load dashboard");
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (!authLoading) load();
+    if (!authLoading) loadDashboard();
   }, [authLoading]);
 
   const barData = useMemo(() => {
@@ -113,6 +120,15 @@ export default function DashboardPage() {
     }
   };
 
+  const handleUploaded = async () => {
+    setUploadMessage("Resume uploaded. Recomputing skills & running analysis...");
+    setAutoAnalyzing(true);
+    await loadDashboard();
+    await runCapabilityAnalysis();
+    setUploadMessage(null);
+    setAutoAnalyzing(false);
+  };
+
   if (authLoading || loading) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-12 space-y-4">
@@ -139,6 +155,35 @@ export default function DashboardPage() {
 
       {error && <p className="text-red-400 text-sm">{error}</p>}
 
+      <div className="grid lg:grid-cols-2 gap-6">
+        <UploadResume onUploaded={handleUploaded} />
+
+        <div className="card p-6 space-y-3">
+          <h2 className="text-xl font-semibold">Profile Links</h2>
+          <div className="grid md:grid-cols-2 gap-3">
+            {[
+              { key: "resumeUrl", label: "Resume URL" },
+              { key: "linkedinUrl", label: "LinkedIn URL" },
+              { key: "githubUrl", label: "GitHub URL" },
+              { key: "portfolioUrl", label: "Portfolio URL" },
+            ].map((f) => (
+              <div key={f.key} className="space-y-1">
+                <label className="text-sm text-slate-400">{f.label}</label>
+                <input
+                  value={(links as any)[f.key] || ""}
+                  onChange={(e) => setLinks((prev) => ({ ...prev, [f.key]: e.target.value }))}
+                  className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm"
+                />
+              </div>
+            ))}
+          </div>
+          <button onClick={saveLinks} disabled={linksSaving} className="btn-primary px-4 py-2 text-sm">
+            {linksSaving ? "Saving..." : "Save Links"}
+          </button>
+          {uploadMessage && <p className="text-xs text-slate-400">{uploadMessage}</p>}
+        </div>
+      </div>
+
       <div className="card p-6">
         <h2 className="text-xl font-semibold mb-3">Your Skills</h2>
         <div className="flex flex-wrap gap-2">
@@ -154,36 +199,16 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="card p-6 space-y-3">
-        <h2 className="text-xl font-semibold">Profile Links</h2>
-        <div className="grid md:grid-cols-2 gap-3">
-          {[
-            { key: "resumeUrl", label: "Resume URL" },
-            { key: "linkedinUrl", label: "LinkedIn URL" },
-            { key: "githubUrl", label: "GitHub URL" },
-            { key: "portfolioUrl", label: "Portfolio URL" },
-          ].map((f) => (
-            <div key={f.key} className="space-y-1">
-              <label className="text-sm text-slate-400">{f.label}</label>
-              <input
-                value={(links as any)[f.key] || ""}
-                onChange={(e) => setLinks((prev) => ({ ...prev, [f.key]: e.target.value }))}
-                className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm"
-              />
-            </div>
-          ))}
-        </div>
-        <button onClick={saveLinks} disabled={linksSaving} className="btn-primary px-4 py-2 text-sm">
-          {linksSaving ? "Saving..." : "Save Links"}
-        </button>
-      </div>
-
       {/* Capability Analysis */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">Resume Fit & Capable Roles</h2>
-          <button onClick={runCapabilityAnalysis} disabled={capLoading} className="btn-primary px-4 py-2 text-sm">
-            {capLoading ? "Analyzing..." : "Analyze Resume"}
+          <button
+            onClick={runCapabilityAnalysis}
+            disabled={capLoading || autoAnalyzing}
+            className="btn-primary px-4 py-2 text-sm"
+          >
+            {capLoading || autoAnalyzing ? "Analyzing..." : "Re-run Analysis"}
           </button>
         </div>
 
@@ -316,8 +341,8 @@ export default function DashboardPage() {
         <Card className="p-4 flex flex-wrap gap-3">
           {trending.length ? (
             trending.map((t) => (
-              <span key={t.skill} className="px-3 py-1 rounded-full bg-accent/10 text-accent text-sm">
-                {t.skill} · {t.demandScore}
+              <span key={t.name} className="px-3 py-1 rounded-full bg-accent/10 text-accent text-sm">
+                {t.name} · {t.jobs ?? t.demandScore ?? ""}
               </span>
             ))
           ) : (
