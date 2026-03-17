@@ -6,22 +6,29 @@ import { useAuth } from "../hooks/useAuth";
 import { Menu, X, Sparkles } from "lucide-react";
 import classNames from "classnames";
 
-const navItems = [
-  { href: "/", label: "Home" },
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/dashboard/mentors", label: "Mentors" },
-  { href: "/market", label: "Market Intelligence" },
-  { href: "/career-path", label: "Career Path & Simulator" },
-];
-
 export default function Navbar() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const [open, setOpen] = useState(false);
   const demoCreds = [
     { label: "Demo Mentor", email: "mentor1@example.com", password: "Passw0rd!" },
     { label: "Demo User 1", email: "user1@example.com", password: "Passw0rd!" },
     { label: "Demo User 2", email: "user2@example.com", password: "Passw0rd!" },
   ];
+
+  const navItems =
+    user?.role === "ADMIN"
+      ? [
+          { href: "/admin/dashboard", label: "Dashboard" },
+          { href: "/admin/users", label: "User List" },
+          { href: "/admin/job-skills", label: "Job Skill Set" },
+        ]
+      : [
+          { href: "/", label: "Home" },
+          { href: "/dashboard", label: "Dashboard" },
+          { href: "/dashboard/mentors", label: "Mentors" },
+          { href: "/market", label: "Market Intelligence" },
+          { href: "/career-path", label: "Career Path & Simulator" },
+        ];
 
   return (
     <nav className="sticky top-0 z-30 bg-slate-950/80 backdrop-blur border-b border-slate-800">

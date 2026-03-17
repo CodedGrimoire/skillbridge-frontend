@@ -19,6 +19,7 @@ type Capability = {
   missingSkills: string[];
   missingSoftSkills: string[];
 };
+type HistoryItem = { id: string; role: string; matchScore: number; createdAt: string };
 type Todo = { id: string; name: string; status: "pending" | "in_progress" | "done" };
 
 export default function DashboardPage() {
@@ -37,18 +38,21 @@ export default function DashboardPage() {
   const [linksSaving, setLinksSaving] = useState(false);
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
   const [autoAnalyzing, setAutoAnalyzing] = useState(false);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
 
   const loadDashboard = async () => {
     try {
-      const [p, s, l, me] = await Promise.all([
+      const [p, s, l, me, hist] = await Promise.all([
         api.get("/dashboard/profile"),
         api.get("/dashboard/skills"),
         api.get("/dashboard/latest-analysis"),
         api.get("/users/me"),
+        api.get("/dashboard/analyses"),
       ]);
       setProfile(p.data);
       setSkills(s.data.skills || []);
       setLatest(l.data.analysis);
+      setHistory(hist.data.analyses || []);
       setLinks({
         resumeUrl: me.data.resumeUrl || "",
         linkedinUrl: me.data.linkedinUrl || "",
@@ -275,6 +279,22 @@ export default function DashboardPage() {
         ) : (
           <p className="text-slate-400 text-sm">No analyses yet.</p>
         )}
+      </div>
+
+      <div className="card p-6 space-y-3">
+        <h2 className="text-xl font-semibold">Analysis History</h2>
+        {history.length === 0 && <p className="text-sm text-slate-400">No past analyses.</p>}
+        {history.map((h) => (
+          <div key={h.id} className="flex items-center justify-between border border-slate-800 rounded-lg px-3 py-2">
+            <div>
+              <p className="text-sm font-semibold">{h.role}</p>
+              <p className="text-xs text-slate-400">{new Date(h.createdAt).toLocaleString()}</p>
+            </div>
+            <span className="text-sm font-semibold text-green-400">
+              {h.matchScore?.toFixed ? h.matchScore.toFixed(1) : h.matchScore}
+            </span>
+          </div>
+        ))}
       </div>
 
       {capability && (
