@@ -32,18 +32,27 @@ export default function DashboardPage() {
   const [capability, setCapability] = useState<Capability | null>(null);
   const [capLoading, setCapLoading] = useState(false);
   const [todos, setTodos] = useState<Todo[]>([]);
+  const [links, setLinks] = useState({ resumeUrl: "", linkedinUrl: "", githubUrl: "", portfolioUrl: "" });
+  const [linksSaving, setLinksSaving] = useState(false);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [p, s, l] = await Promise.all([
+        const [p, s, l, me] = await Promise.all([
           api.get("/dashboard/profile"),
           api.get("/dashboard/skills"),
           api.get("/dashboard/latest-analysis"),
+          api.get("/users/me"),
         ]);
         setProfile(p.data);
         setSkills(s.data.skills || []);
         setLatest(l.data.analysis);
+        setLinks({
+          resumeUrl: me.data.resumeUrl || "",
+          linkedinUrl: me.data.linkedinUrl || "",
+          githubUrl: me.data.githubUrl || "",
+          portfolioUrl: me.data.portfolioUrl || "",
+        });
 
         api.get("/market/trending-skills").then((trendRes) => setTrending(trendRes.data.trendingSkills || []));
         api.get("/capability/missing-skills").then((res) => setTodos(res.data || []));
@@ -92,6 +101,18 @@ export default function DashboardPage() {
     setTodos((prev) => prev.map((t) => (t.id === id ? res.data : t)));
   };
 
+  const saveLinks = async () => {
+    setLinksSaving(true);
+    try {
+      await api.put("/users/me/links", links);
+      alert("Links saved");
+    } catch (err: any) {
+      setError(err?.response?.data?.message || "Failed to save links");
+    } finally {
+      setLinksSaving(false);
+    }
+  };
+
   if (authLoading || loading) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-12 space-y-4">
@@ -131,6 +152,30 @@ export default function DashboardPage() {
             <p className="text-slate-400 text-sm">No skills detected yet. Upload a resume to begin.</p>
           )}
         </div>
+      </div>
+
+      <div className="card p-6 space-y-3">
+        <h2 className="text-xl font-semibold">Profile Links</h2>
+        <div className="grid md:grid-cols-2 gap-3">
+          {[
+            { key: "resumeUrl", label: "Resume URL" },
+            { key: "linkedinUrl", label: "LinkedIn URL" },
+            { key: "githubUrl", label: "GitHub URL" },
+            { key: "portfolioUrl", label: "Portfolio URL" },
+          ].map((f) => (
+            <div key={f.key} className="space-y-1">
+              <label className="text-sm text-slate-400">{f.label}</label>
+              <input
+                value={(links as any)[f.key] || ""}
+                onChange={(e) => setLinks((prev) => ({ ...prev, [f.key]: e.target.value }))}
+                className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm"
+              />
+            </div>
+          ))}
+        </div>
+        <button onClick={saveLinks} disabled={linksSaving} className="btn-primary px-4 py-2 text-sm">
+          {linksSaving ? "Saving..." : "Save Links"}
+        </button>
       </div>
 
       {/* Capability Analysis */}
