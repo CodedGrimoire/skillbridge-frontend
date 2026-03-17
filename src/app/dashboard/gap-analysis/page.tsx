@@ -1,99 +1,182 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AdminLayout from "../../../components/layout/AdminLayout";
-import RoleSelector from "../../../components/analysis/RoleSelector";
 import SkillComparison from "../../../components/analysis/SkillComparison";
 import MissingSkillsCard from "../../../components/analysis/MissingSkillsCard";
 import SkillProgressChart from "../../../components/analysis/SkillProgressChart";
+import MissingSkillTodo from "../../../components/analysis/MissingSkillTodo";
 import api from "../../../services/api";
 
-type GapResult = {
-  role: string;
+type Analysis = {
+  id: string;
+  primaryRole: string;
+  score: number;
+  suggestedRoles: string[];
   userSkills: string[];
-  requiredSkills: string[];
   missingSkills: string[];
+  missingSoftSkills: string[];
 };
 
+type Todo = { id: string; name: string; status: "pending" | "in_progress" | "done" };
+
 export default function GapAnalysisPage() {
-  const [selectedRole, setSelectedRole] = useState<string>("");
-  const [gapResult, setGapResult] = useState<GapResult | null>(null);
+  const [userSkills, setUserSkills] = useState<string[]>([]);
+  const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setGapResult(null);
-  }, [selectedRole]);
+    const loadSkills = async () => {
+      try {
+        const res = await api.get("/users/me/skills");
+        setUserSkills(res.data || []);
+      } catch (err: any) {
+        setError(err?.response?.data?.message || "Failed to load your skills");
+      }
+    };
+    const loadTodos = async () => {
+      try {
+        const res = await api.get("/capability/missing-skills");
+        setTodos(res.data || []);
+      } catch (err) {
+        // ignore
+      }
+    };
+    loadSkills();
+    loadTodos();
+  }, []);
 
   const analyze = async () => {
-    if (!selectedRole) {
-      setError("Select a role to analyze your skill gap.");
-      return;
-    }
     setLoading(true);
     setError(null);
     try {
-      const res = await api.get(`/analysis/gap?roleId=${selectedRole}`);
-      setGapResult(res.data);
+      const res = await api.post("/capability/analyze");
+      setAnalysis(res.data);
+      const todoRes = await api.get("/capability/missing-skills");
+      setTodos(todoRes.data || []);
     } catch (err: any) {
-      setError(err?.response?.data?.message || "Failed to analyze skill gap");
+      setError(err?.response?.data?.message || "Failed to analyze resume");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleResources = () => {
-    if (!gapResult?.missingSkills?.length) return;
-    const query = encodeURIComponent(gapResult.missingSkills.join(","));
-    window.location.href = `/dashboard/resources?skills=${query}`;
+  const handleAddTodo = async (name: string) => {
+    const res = await api.post("/capability/missing-skills", { name });
+    setTodos((prev) => [res.data, ...prev]);
   };
+
+  const handleUpdateTodo = async (id: string, status: Todo["status"]) => {
+    const res = await api.put(`/capability/missing-skills/${id}`, { status });
+    setTodos((prev) => prev.map((t) => (t.id === id ? res.data : t)));
+  };
+
+  const handleDeleteTodo = async (id: string) => {
+    await api.delete(`/capability/missing-skills/${id}`);
+    setTodos((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const learned = useMemo(() => analysis?.userSkills?.length || userSkills.length, [analysis, userSkills]);
+  const missingCount = useMemo(() => analysis?.missingSkills?.length || 0, [analysis]);
 
   return (
     <AdminLayout title="Skill Gap Analyzer">
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-6 space-y-4">
-          <div>
-            <h2 className="text-2xl font-semibold dark:text-white">Skill Gap Analyzer</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Select a career role to see where your skills align and what you need to learn next.
-            </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-semibold dark:text-white">Skill Gap Analyzer</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Uses your latest resume to rate fit, suggest roles, and list missing hard/soft skills.
+              </p>
+            </div>
+            <button
+              onClick={analyze}
+              disabled={loading}
+              className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition disabled:opacity-70"
+            >
+              {loading && <span className="h-4 w-4 rounded-full border-b-2 border-white animate-spin mr-2" />}
+              Analyze Resume
+            </button>
           </div>
 
-          <RoleSelector value={selectedRole} onChange={setSelectedRole} />
-
-          <button
-            onClick={analyze}
-            disabled={loading}
-            className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition disabled:opacity-70"
-          >
-            {loading && <span className="h-4 w-4 rounded-full border-b-2 border-white animate-spin mr-2" />}
-            Analyze Skill Gap
-          </button>
-
           {error && <p className="text-sm text-red-500">{error}</p>}
+
+          <div className="space-y-2">
+            <p className="text-sm font-semibold dark:text-white">Extracted Skills from Resume</p>
+            <div className="flex flex-wrap gap-2">
+              {userSkills.length ? (
+                userSkills.map((s) => (
+                  <span
+                    key={s}
+                    className="bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200 px-2 py-1 rounded text-xs font-medium"
+                  >
+                    {s}
+                  </span>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500">Upload a resume to extract skills.</p>
+              )}
+            </div>
+          </div>
         </div>
 
-        {!gapResult && !loading && !selectedRole && (
-          <p className="text-sm text-gray-500">Select a role to analyze your skill gap.</p>
-        )}
-
-        {gapResult && (
+        {analysis && (
           <div className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-5 space-y-2">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Primary Role</p>
+                <p className="text-xl font-semibold dark:text-white">{analysis.primaryRole}</p>
+                <p className="text-sm text-gray-500">Suggested: {analysis.suggestedRoles.join(", ")}</p>
+              </div>
+              <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-5 space-y-2">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Resume Fit Rating</p>
+                <p className="text-3xl font-bold text-green-600">{analysis.score.toFixed(1)} / 10</p>
+              </div>
+            </div>
+
             <SkillComparison
-              userSkills={gapResult.userSkills || []}
-              requiredSkills={gapResult.requiredSkills || []}
+              userSkills={analysis.userSkills || []}
+              requiredSkills={analysis.missingSkills ? [...analysis.userSkills, ...analysis.missingSkills] : analysis.userSkills}
             />
 
             <div className="grid md:grid-cols-2 gap-6">
               <MissingSkillsCard
-                missingSkills={gapResult.missingSkills || []}
-                onViewResources={handleResources}
+                missingSkills={analysis.missingSkills || []}
+                onViewResources={() => {
+                  const query = encodeURIComponent((analysis.missingSkills || []).join(","));
+                  window.location.href = `/dashboard/resources?skills=${query}`;
+                }}
               />
-              <SkillProgressChart
-                learned={gapResult.userSkills?.length || 0}
-                missing={gapResult.missingSkills?.length || 0}
-              />
+              <SkillProgressChart learned={learned} missing={missingCount} />
             </div>
+
+            <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-5">
+              <h3 className="text-lg font-semibold dark:text-white mb-2">Soft Skills to Develop</h3>
+              <div className="flex flex-wrap gap-2">
+                {analysis.missingSoftSkills?.length ? (
+                  analysis.missingSoftSkills.map((s) => (
+                    <span
+                      key={s}
+                      className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-200 px-3 py-1 rounded-full text-xs font-semibold"
+                    >
+                      {s}
+                    </span>
+                  ))
+                ) : (
+                  <p className="text-sm text-gray-500">No soft skills missing.</p>
+                )}
+              </div>
+            </div>
+
+            <MissingSkillTodo
+              items={todos}
+              onAdd={handleAddTodo}
+              onUpdate={handleUpdateTodo}
+              onDelete={handleDeleteTodo}
+            />
           </div>
         )}
       </div>
