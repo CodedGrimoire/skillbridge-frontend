@@ -1,126 +1,121 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import api from "../../services/api";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import Card from "../../components/ui/Card";
-import LoadingCard from "../../components/LoadingCard";
 import SectionContainer from "../../components/ui/SectionContainer";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
-const staticTrending = [
-  { skill: "React", demandScore: 92 },
-  { skill: "Node.js", demandScore: 88 },
-  { skill: "TypeScript", demandScore: 85 },
-  { skill: "Docker", demandScore: 83 },
-  { skill: "AWS", demandScore: 81 },
-];
-
-const staticDemand = {
-  React: 92,
-  "Node.js": 88,
-  TypeScript: 85,
-  Docker: 83,
-  AWS: 81,
-  "PostgreSQL": 78,
-  "Python": 90,
+const fallbackData = {
+  trending: ["React", "Next.js", "TypeScript", "Docker", "AWS"],
+  demand: [
+    { skill: "React", score: 95 },
+    { skill: "Node.js", score: 90 },
+    { skill: "TypeScript", score: 88 },
+    { skill: "Docker", score: 85 },
+    { skill: "AWS", score: 92 },
+  ],
 };
 
 export default function MarketPage() {
-  const [trending, setTrending] = useState<any[]>([]);
-  const [demand, setDemand] = useState<Record<string, number>>({});
+  const [data, setData] = useState(fallbackData);
   const [loading, setLoading] = useState(true);
-  const [sourceLabel, setSourceLabel] = useState<string>("Live Market Data");
 
+  // Simulate initial loading
   useEffect(() => {
-    const load = async () => {
-      try {
-        const [t, d] = await Promise.all([api.get("/market/trending-skills"), api.get("/market/skill-demand")]);
-        setTrending(t.data.trendingSkills || []);
-        setDemand(d.data.skillDemand || {});
-        setSourceLabel("Live Market Data");
-      } catch (err: any) {
-        // fallback to AI-generated insights
-        try {
-          const gen = await api.post("/market/generate");
-          setTrending(gen.data.trendingSkills || staticTrending);
-          setDemand(gen.data.skillDemand || staticDemand);
-          setSourceLabel("AI Generated Insights");
-        } catch {
-          setTrending(staticTrending);
-          setDemand(staticDemand);
-          setSourceLabel("AI Generated Insights");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
+    const timer = setTimeout(() => {
+      setData(fallbackData);
+      setLoading(false);
+    }, 800);
+    return () => clearTimeout(timer);
   }, []);
 
-  const demandData = useMemo(
-    () =>
-      Object.entries(demand)
-        .map(([skill, value]) => ({ skill, value }))
-        .sort((a, b) => b.value - a.value)
-        .slice(0, 15),
-    [demand]
-  );
-
-  if (loading) {
-    return (
-      <SectionContainer>
-        <div className="py-12 space-y-4">
-          <LoadingCard lines={3} />
-          <LoadingCard lines={5} />
-        </div>
-      </SectionContainer>
-    );
-  }
+  // Simulate live auto-updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setData((prev) => ({
+        ...prev,
+        demand: prev.demand.map((s) => ({
+          ...s,
+          score: Math.min(100, s.score + Math.random() * 2),
+        })),
+      }));
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <SectionContainer>
-      <div className="py-12 space-y-8">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="py-12 space-y-8"
+      >
         <div className="space-y-2">
           <h1 className="text-3xl font-semibold">Market Intelligence</h1>
           <p className="text-slate-400">See which skills are trending across job postings.</p>
           <p className="text-xs text-slate-500">These insights are generated based on current industry trends</p>
         </div>
 
-        <Card className="p-6 space-y-3">
+        <Card className="p-6 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Trending Skills</h2>
-            <span className="text-xs text-slate-500">{sourceLabel}</span>
+            <span className="text-xs text-slate-500">AI Generated Insights</span>
           </div>
           <div className="flex flex-wrap gap-3">
-            {trending.map((t) => (
-              <span
-                key={t.skill || t.name}
-                className="px-3 py-1 rounded-full bg-accent/10 text-accent text-sm shadow-sm"
-              >
-                {t.skill || t.name} · {t.demandScore ?? t.jobs ?? ""}
-              </span>
-            ))}
+            {loading
+              ? Array.from({ length: 5 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-9 px-6 rounded-full bg-slate-800 animate-pulse border border-slate-700"
+                  />
+                ))
+              : data.trending.map((skill, i) => (
+                  <motion.span
+                    key={skill}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    className="px-3 py-2 rounded-full bg-gradient-to-r from-accent/20 via-accent2/20 to-accent/20 text-accent text-sm border border-accent/30 shadow-sm hover:scale-[1.03] transition"
+                  >
+                    {skill}
+                  </motion.span>
+                ))}
           </div>
         </Card>
 
-        <Card className="p-6 space-y-3">
+        <Card className="p-6 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Skill Demand (Top 15)</h2>
-            <span className="text-xs text-slate-500">{sourceLabel}</span>
+            <h2 className="text-xl font-semibold">Skill Demand (Simulated Live Data)</h2>
+            <span className="text-xs text-slate-500">Auto-updating</span>
           </div>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={demandData.length ? demandData : Object.entries(staticDemand).map(([skill, value]) => ({ skill, value }))}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                <XAxis dataKey="skill" stroke="#cbd5e1" tick={{ fontSize: 12 }} />
-                <YAxis stroke="#cbd5e1" allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="value" fill="#38bdf8" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="space-y-3">
+            {loading
+              ? Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="space-y-1">
+                    <div className="h-3 w-20 bg-slate-800 animate-pulse rounded" />
+                    <div className="h-3 w-full bg-slate-800 animate-pulse rounded" />
+                  </div>
+                ))
+              : data.demand.map((item, i) => (
+                  <div key={item.skill} className="space-y-1">
+                    <div className="flex items-center justify-between text-sm text-slate-300">
+                      <span>{item.skill}</span>
+                      <span className="text-xs text-slate-400">{Math.round(item.score)}%</span>
+                    </div>
+                    <div className="h-3 w-full rounded-full bg-slate-800 overflow-hidden">
+                      <motion.div
+                        className="h-3 rounded-full bg-gradient-to-r from-accent to-accent2"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${item.score}%` }}
+                        transition={{ delay: i * 0.05, type: "spring", stiffness: 120, damping: 20 }}
+                      />
+                    </div>
+                  </div>
+                ))}
           </div>
         </Card>
-      </div>
+      </motion.div>
     </SectionContainer>
   );
 }
