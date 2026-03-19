@@ -19,6 +19,7 @@ export default function LoginPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
+    setValue,
   } = useForm({ resolver: zodResolver(schema) });
 
   useEffect(() => {
@@ -26,8 +27,10 @@ export default function LoginPage() {
     const password = localStorage.getItem("demo_password");
     if (email && password) {
       setDemo({ email, password });
+      setValue("email", email);
+      setValue("password", password);
     }
-  }, []);
+  }, [setValue]);
 
   const onSubmit = async (data: any) => {
     try {
@@ -82,6 +85,8 @@ export default function LoginPage() {
                   localStorage.setItem("demo_email", d.email);
                   localStorage.setItem("demo_password", d.password);
                   setDemo({ email: d.email, password: d.password });
+                  setValue("email", d.email);
+                  setValue("password", d.password);
                 }}
               >
                 {d.label} — {d.email} / {d.password}
