@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import api from "../../services/api";
 import Card from "../../components/ui/Card";
-import SkillTree from "../../components/SkillTree";
 import SectionContainer from "../../components/ui/SectionContainer";
+import CareerPathGraph from "../../components/CareerPathGraph";
+import QuestPanel from "../../components/QuestPanel";
 
 type Roadmap = { role: string; stages: { level: string; skills: string[] }[] };
 type Analysis = {
@@ -14,11 +16,12 @@ type Analysis = {
   progress: number;
 };
 
-type SavedPlan = { role: string; roadmap: Roadmap; analysis: Analysis };
+type SavedPlan = { id: string; role: string; roadmap: Roadmap; analysis: Analysis };
 
 export default function CareerPathPage() {
   const [role, setRole] = useState("Full Stack Developer");
   const [roles, setRoles] = useState<string[]>([]);
+  const [activeStage, setActiveStage] = useState<string>("Beginner");
   const [inputSkill, setInputSkill] = useState("");
   const [userSkills, setUserSkills] = useState<string[]>([]);
   const [roadmap, setRoadmap] = useState<Roadmap | null>(null);
@@ -31,10 +34,11 @@ export default function CareerPathPage() {
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    const savedRaw = localStorage.getItem("career_vision_saves");
-    if (savedRaw) {
-      setSaved(JSON.parse(savedRaw));
-    }
+    api
+      .get("/roadmap/plans")
+      .then((res) => setSaved(res.data || []))
+      .catch(() => {});
+
     // preload available roles from backend for dropdown
     api
       .get("/roles")
@@ -50,7 +54,6 @@ export default function CareerPathPage() {
 
   const persistSaved = (plans: SavedPlan[]) => {
     setSaved(plans);
-    localStorage.setItem("career_vision_saves", JSON.stringify(plans));
   };
 
   const runAnalyze = async (opts?: { debounce?: boolean }) => {
@@ -79,6 +82,7 @@ export default function CareerPathPage() {
       const data = res.data;
       setRoadmap(data.roadmap);
       setAnalysis(data.analysis);
+      setActiveStage(data.analysis?.currentStage || "Beginner");
       setCache((prev) => ({ ...prev, [cacheKey]: data }));
       if (res.data?.message) setStatus("Unable to load roadmap, using default");
     } catch (err: any) {
@@ -119,14 +123,26 @@ export default function CareerPathPage() {
 
   const savePlan = () => {
     if (!roadmap || !analysis) return;
-    const updated = [{ role, roadmap, analysis }, ...saved.filter((p) => p.role !== role)];
-    persistSaved(updated);
-    setStatus("Saved locally.");
+    api
+      .post("/roadmap/plans", { role, roadmap, analysis })
+      .then((res) => {
+        const updated = [res.data, ...saved.filter((p) => p.role !== role)];
+        persistSaved(updated);
+        setStatus("Saved.");
+      })
+      .catch(() => setStatus("Save failed"));
   };
 
   const deletePlan = (r: string) => {
-    const updated = saved.filter((p) => p.role !== r);
-    persistSaved(updated);
+    const plan = saved.find((p) => p.role === r);
+    if (!plan) return;
+    api
+      .delete(`/roadmap/plans/${plan.id}`)
+      .then(() => {
+        const updated = saved.filter((p) => p.role !== r);
+        persistSaved(updated);
+      })
+      .catch(() => setStatus("Delete failed"));
   };
 
   const progress = analysis?.progress ?? 0;
@@ -135,6 +151,13 @@ export default function CareerPathPage() {
   const stageLabel = useMemo(() => {
     if (!analysis) return "—";
     return `${analysis.currentStage} stage`;
+  }, [analysis]);
+
+  const nextStage = useMemo(() => {
+    const order = ["Beginner", "Junior", "Senior"];
+    if (!analysis?.currentStage) return "Junior";
+    const idx = order.indexOf(analysis.currentStage);
+    return idx >= 0 && idx < order.length - 1 ? order[idx + 1] : "Mastery";
   }, [analysis]);
 
   return (
@@ -146,11 +169,18 @@ export default function CareerPathPage() {
         </div>
         <div className="flex items-center gap-2 text-sm">
           <select
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
+            value={roles.includes(role) ? role : "__custom"}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === "__custom") {
+                setRole("");
+              } else {
+                setRole(val);
+              }
+            }}
             className="rounded-lg bg-slate-900 border border-slate-800 px-3 py-2 text-white"
           >
-            {roles.length === 0 && <option value={role}>Custom: {role}</option>}
+            {roles.length === 0 && <option value="__custom">Custom role</option>}
             {roles.map((r) => (
               <option key={r} value={r}>
                 {r}
@@ -158,10 +188,10 @@ export default function CareerPathPage() {
             ))}
             <option value="__custom">Custom...</option>
           </select>
-          {role === "__custom" && (
+          {!roles.includes(role) && (
             <input
-              autoFocus
-              onBlur={(e) => setRole(e.target.value || "Full Stack Developer")}
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
               className="rounded-lg bg-slate-900 border border-slate-800 px-3 py-2"
               placeholder="Enter custom role"
             />
@@ -214,9 +244,11 @@ export default function CareerPathPage() {
             <span className="text-xs text-slate-400">{stageLabel}</span>
           </div>
           <div className="h-3 w-full rounded-full bg-slate-800 overflow-hidden">
-            <div
-              className="h-3 rounded-full bg-accent transition-all"
-              style={{ width: `${progress}%` }}
+            <motion.div
+              className="h-3 rounded-full bg-accent"
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ type: "spring", stiffness: 120, damping: 20 }}
             />
           </div>
           <p className="text-lg font-semibold">{progress}% complete</p>
@@ -226,25 +258,29 @@ export default function CareerPathPage() {
         </Card>
       </div>
 
-      <SkillTree roadmap={roadmap || undefined} completedSkills={analysis?.completedSkills || []} currentStage={analysis?.currentStage} />
-
       <Card className="p-5 space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Missing Skills To-Do</h3>
-          <span className="text-xs text-slate-500">Auto-updates after simulation</span>
+        <div className="space-y-1">
+          <p className="text-sm text-slate-400">
+            You are {progress}% towards becoming a {roadmap?.role || role}
+          </p>
+          <p className="text-sm text-slate-300">
+            Current Stage: {analysis?.currentStage || "—"} • Next Stage: {nextStage}
+          </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {missingSkills.length === 0 && <p className="text-sm text-slate-400">No missing skills detected.</p>}
-          {missingSkills.map((s) => (
-            <span key={s} className="px-3 py-1 rounded-full bg-red-500/20 text-red-200 text-sm">
-              {s}
-            </span>
-          ))}
-        </div>
+        <CareerPathGraph
+          roadmap={roadmap || undefined}
+          analysis={analysis || undefined}
+          completedSkills={analysis?.completedSkills || []}
+          missingSkills={missingSkills}
+          activeStage={activeStage}
+          onStageSelect={setActiveStage}
+        />
       </Card>
 
+      <QuestPanel missingSkills={missingSkills} />
+
       <Card className="p-5 space-y-3">
-        <h3 className="text-lg font-semibold">Saved Roadmaps (local)</h3>
+        <h3 className="text-lg font-semibold">Saved Roadmaps</h3>
         {saved.length === 0 && <p className="text-sm text-slate-400">Nothing saved yet.</p>}
         <div className="space-y-2">
           {saved.map((plan) => (
@@ -277,6 +313,24 @@ export default function CareerPathPage() {
             </div>
           ))}
         </div>
+      </Card>
+
+      <Card className="p-5 space-y-3">
+        <h3 className="text-lg font-semibold">Projection Panel</h3>
+        <p className="text-sm text-slate-400">If you learn these skills:</p>
+        <div className="flex flex-wrap gap-2">
+          {missingSkills.slice(0, 2).map((s, idx) => {
+            const boost = Math.max(6, Math.min(12, Math.round((100 - progress) / Math.max(2, missingSkills.length)) + idx * 2));
+            return (
+              <span key={s} className="px-3 py-1 rounded-full bg-accent/10 text-accent text-sm">
+                {s} (+{boost}%)
+              </span>
+            );
+          })}
+        </div>
+        <p className="text-sm text-slate-300">
+          Projected Level: {progress >= 66 ? "Senior" : progress >= 33 ? "Junior" : "Beginner"}
+        </p>
       </Card>
 
       {loading && <p className="text-sm text-slate-400">Generating roadmap...</p>}
