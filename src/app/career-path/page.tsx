@@ -19,6 +19,16 @@ type Analysis = {
 type SavedPlan = { id: string; role: string; roadmap: Roadmap; analysis: Analysis };
 
 export default function CareerPathPage() {
+  const fallbackRoles = [
+    "Full Stack Developer",
+    "Backend Developer",
+    "Frontend Developer",
+    "Data Engineer",
+    "Data Scientist",
+    "DevOps Engineer",
+    "Machine Learning Engineer",
+    "Product Manager",
+  ];
   const [role, setRole] = useState("Full Stack Developer");
   const [roles, setRoles] = useState<string[]>([]);
   const [activeStage, setActiveStage] = useState<string>("Beginner");
@@ -44,11 +54,17 @@ export default function CareerPathPage() {
       .get("/roles")
       .then((res) => {
         const titles = (res.data || []).map((r: any) => r.title).filter(Boolean);
-        setRoles(titles);
-        if (titles.length) setRole(titles[0]);
+        if (titles.length) {
+          setRoles(titles);
+          setRole(titles[0]);
+        } else {
+          setRoles(fallbackRoles);
+          setRole(fallbackRoles[0]);
+        }
       })
       .catch(() => {
-        // ignore; fallback to default role
+        setRoles(fallbackRoles);
+        setRole(fallbackRoles[0]);
       });
   }, []);
 
@@ -169,33 +185,18 @@ export default function CareerPathPage() {
         </div>
         <div className="flex items-center gap-2 text-sm">
           <select
-            value={roles.includes(role) ? role : "__custom"}
-            onChange={(e) => {
-              const val = e.target.value;
-              if (val === "__custom") {
-                setRole("");
-              } else {
-                setRole(val);
-              }
-            }}
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
             className="rounded-lg bg-slate-900 border border-slate-800 px-3 py-2 text-white"
           >
-            {roles.length === 0 && <option value="__custom">Custom role</option>}
+            {roles.length === 0 && fallbackRoles.map((r) => <option key={r} value={r}>{r}</option>)}
             {roles.map((r) => (
               <option key={r} value={r}>
                 {r}
               </option>
             ))}
-            <option value="__custom">Custom...</option>
+            {!roles.includes(role) && role && <option value={role}>{role} (custom)</option>}
           </select>
-          {!roles.includes(role) && (
-            <input
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="rounded-lg bg-slate-900 border border-slate-800 px-3 py-2"
-              placeholder="Enter custom role"
-            />
-          )}
           <button onClick={() => runAnalyze()} className="btn-primary text-sm px-4 py-2">
             Run Simulation
           </button>
