@@ -21,11 +21,13 @@ export default function Navbar() {
           { href: "/", label: "Home" },
           { href: "/admin/dashboard", label: "Dashboard" },
           { href: "/admin/users", label: "User List" },
+          { href: "/mentor/tasks", label: "Mentor Tasks" },
         ]
       : [
           { href: "/", label: "Home" },
           { href: "/dashboard", label: "Dashboard" },
           { href: "/dashboard/mentors", label: "Mentors" },
+          { href: "/tasks", label: "My Tasks" },
           { href: "/market", label: "Market Intelligence" },
           { href: "/career-path", label: "Career Path & Simulator" },
         ];
