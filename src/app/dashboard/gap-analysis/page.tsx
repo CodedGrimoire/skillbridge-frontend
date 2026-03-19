@@ -21,6 +21,8 @@ type Analysis = {
 type Todo = { id: string; name: string; status: "pending" | "in_progress" | "done" };
 
 export default function GapAnalysisPage() {
+  const [roles, setRoles] = useState<string[]>([]);
+  const [selectedRole, setSelectedRole] = useState<string>("");
   const [userSkills, setUserSkills] = useState<string[]>([]);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -44,15 +46,26 @@ export default function GapAnalysisPage() {
         // ignore
       }
     };
+    const loadRoles = async () => {
+      try {
+        const res = await api.get("/roles");
+        const titles = (res.data || []).map((r: any) => r.title).filter(Boolean);
+        setRoles(titles);
+        if (!selectedRole && titles.length) setSelectedRole(titles[0]);
+      } catch {
+        // ignore silently
+      }
+    };
     loadSkills();
     loadTodos();
+    loadRoles();
   }, []);
 
   const analyze = async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.post("/capability/analyze");
+      const res = await api.post("/capability/analyze", selectedRole ? { role: selectedRole } : {});
       setAnalysis(res.data);
       const todoRes = await api.get("/capability/missing-skills");
       setTodos(todoRes.data || []);
@@ -85,21 +98,38 @@ export default function GapAnalysisPage() {
     <AdminLayout title="Skill Gap Analyzer">
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-6 space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div>
               <h2 className="text-2xl font-semibold dark:text-white">Skill Gap Analyzer</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 Uses your latest resume to rate fit, suggest roles, and list missing hard/soft skills.
               </p>
             </div>
-            <button
-              onClick={analyze}
-              disabled={loading}
-              className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition disabled:opacity-70"
-            >
-              {loading && <span className="h-4 w-4 rounded-full border-b-2 border-white animate-spin mr-2" />}
-              Analyze Resume
-            </button>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-gray-500 dark:text-gray-300">Target role</label>
+                <select
+                  value={selectedRole}
+                  onChange={(e) => setSelectedRole(e.target.value)}
+                  className="rounded-lg bg-slate-900 border border-slate-800 px-3 py-2 text-sm text-white"
+                >
+                  {roles.length === 0 && <option value="">Auto-detect</option>}
+                  {roles.map((r) => (
+                    <option key={r} value={r}>
+                      {r}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                onClick={analyze}
+                disabled={loading}
+                className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition disabled:opacity-70"
+              >
+                {loading && <span className="h-4 w-4 rounded-full border-b-2 border-white animate-spin mr-2" />}
+                Analyze Resume
+              </button>
+            </div>
           </div>
 
           {error && <p className="text-sm text-red-500">{error}</p>}

@@ -330,31 +330,32 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {capability && (
-        <div className="card p-5 space-y-3">
+      <div className="card p-5 space-y-3">
+        <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Missing Skill To-Do</h3>
-          <div className="space-y-2">
-            {todos.length === 0 && <p className="text-sm text-slate-400">No to-do items yet.</p>}
-            {todos.map((t) => (
-              <div
-                key={t.id}
-                className="flex items-center justify-between border border-slate-800 rounded-lg px-3 py-2"
-              >
-                <span className="text-sm">{t.name}</span>
-                <select
-                  value={t.status}
-                  onChange={(e) => updateTodoStatus(t.id, e.target.value as Todo["status"])}
-                  className="text-xs rounded bg-slate-900 border border-slate-700 px-2 py-1"
-                >
-                  <option value="pending">pending</option>
-                  <option value="in_progress">in progress</option>
-                  <option value="done">done</option>
-                </select>
-              </div>
-            ))}
-          </div>
+          {!capability && <span className="text-xs text-slate-500">Run analysis to refresh this list.</span>}
         </div>
-      )}
+        <div className="space-y-2">
+          {todos.length === 0 && <p className="text-sm text-slate-400">No to-do items yet.</p>}
+          {todos.map((t) => (
+            <div
+              key={t.id}
+              className="flex items-center justify-between border border-slate-800 rounded-lg px-3 py-2"
+            >
+              <span className="text-sm">{t.name}</span>
+              <select
+                value={t.status}
+                onChange={(e) => updateTodoStatus(t.id, e.target.value as Todo["status"])}
+                className="text-xs rounded bg-slate-900 border border-slate-700 px-2 py-1"
+              >
+                <option value="pending">pending</option>
+                <option value="in_progress">in progress</option>
+                <option value="done">done</option>
+              </select>
+            </div>
+          ))}
+        </div>
+      </div>
 
       <div className="space-y-3">
         <h2 className="text-xl font-semibold">Market Trending Skills</h2>
