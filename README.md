@@ -2,6 +2,12 @@
 
 A modern Next.js (App Router) frontend for SkillBridge AI — a mentor-led career accelerator with resume analysis, mentor matching, tasks, courses, and market insights.
 
+## Live URLs
+
+- Local dev: http://localhost:3000
+- API base (local): http://localhost:5000/api
+- Production: _add your deployed frontend/API URLs here_
+
 ## Features
 
 - **Role-aware dashboards** for mentors and jobseekers (tasks, mentees, skills, history).
@@ -14,7 +20,7 @@ A modern Next.js (App Router) frontend for SkillBridge AI — a mentor-led caree
 - **Custom 404** page.
 - **Dark, minimal UI** with neutral palette and subtle indigo accents.
 
-## Tech Stack
+## Technologies Used
 
 - **Next.js 14 (App Router)**, **TypeScript**, **TailwindCSS**
 - **Axios** for API calls
@@ -46,12 +52,17 @@ A modern Next.js (App Router) frontend for SkillBridge AI — a mentor-led caree
 - Buttons: primary indigo, secondary neutral
 - Status/badges: indigo (submitted), green (approved), red (rejected), neutral (pending)
 
-## Development
+## Setup Instructions
 
+1) Install dependencies  
 ```bash
 cd frontend
 npm install
+```
+2) Configure environment  
+Create `.env.local` with `NEXT_PUBLIC_API_BASE_URL` (defaults to `http://localhost:5000/api`).
+3) Run the dev server  
+```bash
 npm run dev
 ```
-
-Frontend listens on `http://localhost:3000` and calls the backend at `NEXT_PUBLIC_API_BASE_URL`.
+4) Open the app at `http://localhost:3000`.
