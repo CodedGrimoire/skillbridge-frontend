@@ -11,6 +11,7 @@ type Task = {
   description: string;
   deadline: string;
   difficulty: string;
+  fullMarks?: number;
   assignments: { id: string; status: string; user: { id: string; name: string } }[];
 };
 

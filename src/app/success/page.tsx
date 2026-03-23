@@ -1,13 +1,15 @@
- "use client";
+"use client";
+
+export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Card from "../../components/ui/Card";
 import SectionContainer from "../../components/ui/SectionContainer";
 import api from "../../services/api";
 import { useSearchParams } from "next/navigation";
 
-export default function SuccessPage() {
+function SuccessInner() {
   const params = useSearchParams();
   const sessionId = params.get("session_id");
   const [status, setStatus] = useState<"pending" | "verified" | "error">("pending");
@@ -52,5 +54,13 @@ export default function SuccessPage() {
         </div>
       </Card>
     </SectionContainer>
+  );
+}
+
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={<SectionContainer className="py-16"><p className="text-neutral-500">Loading...</p></SectionContainer>}>
+      <SuccessInner />
+    </Suspense>
   );
 }

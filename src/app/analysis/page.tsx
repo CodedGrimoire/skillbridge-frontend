@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+export const dynamic = "force-dynamic";
+
+import { useEffect, useMemo, useState, Suspense } from "react";
 import api from "../../services/api";
 import { useRequireAuth } from "../../hooks/useRequireAuth";
 import LoadingCard from "../../components/LoadingCard";
@@ -13,7 +15,7 @@ import { useAuth } from "../../hooks/useAuth";
 
 const COLORS = ["#38bdf8", "#a855f7", "#22d3ee", "#f97316"];
 
-export default function AnalysisPage() {
+function AnalysisInner() {
   const { user } = useAuth();
   const { loading: authLoading } = useRequireAuth();
   const searchParams = useSearchParams();
@@ -171,5 +173,13 @@ export default function AnalysisPage() {
         )}
       </div>
     </SectionContainer>
+  );
+}
+
+export default function AnalysisPage() {
+  return (
+    <Suspense fallback={<SectionContainer className="py-10"><LoadingCard lines={3} /></SectionContainer>}>
+      <AnalysisInner />
+    </Suspense>
   );
 }
