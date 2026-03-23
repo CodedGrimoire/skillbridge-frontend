@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import AdminLayout from "../../../components/layout/AdminLayout";
 import api from "../../../services/api";
 import { useAuth } from "../../../hooks/useAuth";
+import { Clock3, Users, Star } from "lucide-react";
 
 type MentorRequest = {
   id: string;
@@ -62,47 +63,54 @@ export default function AdminDashboardPage() {
 
   return (
     <AdminLayout title="Mentor Dashboard">
-      <div className="space-y-6">
+      <div className="space-y-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <StatCard label="Pending Requests" value={pending.length} />
-        <StatCard label="Active Mentees" value={accepted.length} />
-        <StatCard
-          label="Rating"
-          value={
-            profile?.rating ? `${profile.rating.toFixed(1)} ★ (${profile.reviewsCount ?? 0})` : "—"
-          }
-        />
+          <StatCard label="Pending Requests" value={pending.length} />
+          <StatCard label="Active Mentees" value={accepted.length} />
+          <StatCard
+            label="Rating"
+            value={profile?.rating ? `${profile.rating.toFixed(1)} ★ (${profile.reviewsCount ?? 0})` : "—"}
+          />
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6">
-        <CardBlock title="Incoming Requests" subtitle="Respond to new mentees">
+          <CardBlock
+            title="Incoming Requests"
+            subtitle="Respond to new mentees"
+            className="border border-indigo-500/30 bg-indigo-500/5 shadow-md"
+          >
           {pending.length === 0 && <EmptyMsg text="No pending requests." />}
           {pending.map((r) => (
             <div
               key={r.id}
-              className="flex items-center justify-between border border-slate-800 rounded-lg px-3 py-2"
+              className="flex items-center justify-between border border-white/10 rounded-lg px-3 py-3 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition"
             >
-              <div>
-                <p className="text-sm font-semibold">{r.user.name}</p>
-                <p className="text-xs text-slate-400">{r.user.email}</p>
-                {r.message && <p className="text-xs text-slate-500 mt-1">“{r.message}”</p>}
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-indigo-500/15 border border-indigo-500/20 flex items-center justify-center text-indigo-200 text-sm">
+                  {r.user.name[0]}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">{r.user.name}</p>
+                  <p className="text-xs text-neutral-500">{r.user.email}</p>
+                  {r.message && <p className="text-xs text-neutral-500 mt-1">“{r.message}”</p>}
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <a
                   href={`/admin/users/${r.user.id}`}
-                  className="text-xs px-3 py-1 rounded bg-neutral-800 text-neutral-200 hover:bg-neutral-700"
+                  className="text-xs px-4 py-2 rounded-lg border border-white/10 text-neutral-200 hover:bg-white/5 transition"
                 >
                   View Profile
                 </a>
                 <button
                   onClick={() => updateRequest(r.id, "accepted")}
-                  className="px-3 py-1 rounded bg-green-600 text-white text-xs"
+                  className="px-4 py-2 rounded-lg bg-green-500 hover:bg-green-400 text-white text-xs transition hover:scale-105"
                 >
                   Accept
                 </button>
                 <button
                   onClick={() => updateRequest(r.id, "denied")}
-                  className="px-3 py-1 rounded bg-red-600 text-white text-xs"
+                  className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-400 text-white text-xs transition hover:scale-105"
                 >
                   Deny
                 </button>
@@ -116,7 +124,7 @@ export default function AdminDashboardPage() {
           {accepted.map((r) => (
             <div
               key={r.id}
-              className="flex items-center justify-between border border-slate-800 rounded-lg px-3 py-2"
+              className="flex items-center justify-between border border-white/10 rounded-lg px-3 py-3 bg-white/5 backdrop-blur-sm"
             >
               <div>
                 <p className="text-sm font-semibold">{r.user.name}</p>
@@ -136,14 +144,19 @@ export default function AdminDashboardPage() {
         </div>
 
         <CardBlock title="Meetings" subtitle="Upcoming and past meetings">
-        {meetings.length === 0 && <EmptyMsg text="No meetings scheduled." />}
+        {meetings.length === 0 && (
+          <div className="text-sm text-white/60 space-y-1">
+            <p>No meetings yet.</p>
+            <p className="text-xs text-neutral-500">Once you accept mentees, meetings will appear here.</p>
+          </div>
+        )}
         <div className="grid md:grid-cols-2 gap-3">
           {meetings.map((m) => (
-            <div key={m.id} className="border border-slate-800 rounded-lg p-3 space-y-1">
+            <div key={m.id} className="border border-white/10 rounded-lg p-3 space-y-1 bg-white/5 backdrop-blur-sm">
               <p className="text-sm font-semibold">{new Date(m.scheduledAt).toLocaleString()}</p>
-              <p className="text-xs text-slate-400">Link: {m.meetLink}</p>
-              {m.note && <p className="text-xs text-slate-500">Note: {m.note}</p>}
-              <p className="text-xs text-slate-400">Status: {m.status}</p>
+              <p className="text-xs text-neutral-500">Link: {m.meetLink}</p>
+              {m.note && <p className="text-xs text-neutral-500">Note: {m.note}</p>}
+              <p className="text-xs text-neutral-500">Status: {m.status}</p>
             </div>
           ))}
         </div>
@@ -155,7 +168,7 @@ export default function AdminDashboardPage() {
           {jobseekers.map((js) => (
             <div
               key={js.id}
-              className="flex items-center justify-between border border-slate-800 rounded-lg px-3 py-2"
+              className="flex items-center justify-between border border-white/10 rounded-lg px-3 py-3 bg-white/5 backdrop-blur-sm"
             >
               <div>
                 <p className="text-sm font-semibold">{js.name}</p>
@@ -178,9 +191,19 @@ export default function AdminDashboardPage() {
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-5">
-      <p className="text-sm text-slate-400">{label}</p>
-      <p className="text-2xl font-semibold">{value}</p>
+    <div className="rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm p-5 shadow-sm hover:scale-[1.01] hover:shadow-md transition">
+      <div className="flex items-start gap-2">
+        <div className="h-8 w-8 rounded-md bg-white/5 border border-white/10 flex items-center justify-center text-white/60">
+          {label.includes("Pending") && <Clock3 className="h-4 w-4" />}
+          {label.includes("Mentees") && <Users className="h-4 w-4" />}
+          {label.includes("Rating") && <Star className="h-4 w-4" />}
+        </div>
+        <div>
+          <p className="text-sm text-white/60">{label}</p>
+          <p className="text-4xl font-semibold text-white mt-1">{value}</p>
+          <div className="h-0.5 w-10 bg-indigo-500/60 rounded-full mt-2" />
+        </div>
+      </div>
     </div>
   );
 }
@@ -197,11 +220,11 @@ function CardBlock({
   className?: string;
 }) {
   return (
-    <div className={`bg-white dark:bg-gray-900 rounded-xl shadow p-6 space-y-3 ${className}`}>
+    <div className={`rounded-xl border border-white/10 bg-white/5 backdrop-blur-md p-6 space-y-3 ${className}`}>
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold">{title}</h3>
-          {subtitle && <p className="text-xs text-slate-400">{subtitle}</p>}
+          {subtitle && <p className="text-sm text-white/60">{subtitle}</p>}
         </div>
       </div>
       {children}
@@ -210,5 +233,5 @@ function CardBlock({
 }
 
 function EmptyMsg({ text }: { text: string }) {
-  return <p className="text-sm text-slate-400">{text}</p>;
+  return <p className="text-sm text-white/60">{text}</p>;
 }
