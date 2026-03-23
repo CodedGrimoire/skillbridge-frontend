@@ -50,8 +50,8 @@ export default function AdminUsersPage() {
                   Joined: {new Date(u.createdAt).toLocaleDateString()}
                 </p>
                 <a
-                  href={`/admin/mentorship?userId=${u.id}`}
-                  className="text-xs px-3 py-1 rounded bg-blue-600 text-white inline-block mt-2"
+                  href={`/admin/users/${u.id}`}
+                  className="text-xs px-3 py-1 rounded bg-indigo-500 hover:bg-indigo-400 text-white inline-block mt-2"
                 >
                   View profile
                 </a>

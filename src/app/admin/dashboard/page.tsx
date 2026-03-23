@@ -88,6 +88,12 @@ export default function AdminDashboardPage() {
                 {r.message && <p className="text-xs text-slate-500 mt-1">“{r.message}”</p>}
               </div>
               <div className="flex items-center gap-2">
+                <a
+                  href={`/admin/users/${r.user.id}`}
+                  className="text-xs px-3 py-1 rounded bg-neutral-800 text-neutral-200 hover:bg-neutral-700"
+                >
+                  View Profile
+                </a>
                 <button
                   onClick={() => updateRequest(r.id, "accepted")}
                   className="px-3 py-1 rounded bg-green-600 text-white text-xs"

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { useAuth } from "../hooks/useAuth";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { FaRobot } from "react-icons/fa6";
@@ -10,6 +11,7 @@ import classNames from "classnames";
 export default function Navbar() {
   const { user, logout, loading } = useAuth();
   const [open, setOpen] = useState(false);
+  const pathname = usePathname();
   const demoCreds = [
     { label: "Demo Mentor", email: "mentor1@example.com", password: "Passw0rd!" },
     { label: "Demo User 1", email: "user1@example.com", password: "Passw0rd!" },
@@ -19,17 +21,18 @@ export default function Navbar() {
   const navItems =
     user?.role === "ADMIN"
       ? [
-          { href: "/dashboard", label: "Dashboard" },
+          { href: "/admin/dashboard", label: "Dashboard" },
+          { href: "/admin/users", label: "Users" },
           { href: "/career-path", label: "Career" },
           { href: "/market", label: "Market" },
           { href: "/mentor/tasks", label: "Tasks" },
         ]
       : [
           { href: "/dashboard", label: "Dashboard" },
-          { href: "/dashboard/mentors", label: "Mentors" },
           { href: "/career-path", label: "Career" },
           { href: "/market", label: "Market" },
           { href: "/tasks", label: "Tasks" },
+          { href: "/dashboard/mentors", label: "Mentors" },
         ];
 
   return (
@@ -59,8 +62,10 @@ export default function Navbar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="text-neutral-400 hover:text-white transition duration-200 pb-1 data-[active=true]:text-white data-[active=true]:border-b-2 data-[active=true]:border-white"
-                  data-active={typeof window !== "undefined" && window.location.pathname === item.href}
+                  className={classNames(
+                    "text-neutral-400 hover:text-white transition duration-200 pb-1 border-b-2 border-transparent",
+                    pathname === item.href && "text-white border-white"
+                  )}
                   onClick={() => setOpen(false)}
                 >
                   {item.label}

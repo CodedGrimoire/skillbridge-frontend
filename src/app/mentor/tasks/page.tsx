@@ -18,6 +18,7 @@ export default function MentorTasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mentees, setMentees] = useState<{ id: string; name: string; email: string }[]>([]);
 
   const [form, setForm] = useState({
     title: "",
@@ -25,7 +26,7 @@ export default function MentorTasksPage() {
     deadline: "",
     difficulty: "medium",
     mentorId: "",
-    assignedUserIds: "",
+    assignedUserIds: [] as string[],
   });
 
   const loadTasks = async (mentorId?: string) => {
@@ -33,8 +34,12 @@ export default function MentorTasksPage() {
     try {
       const resMe = await api.get("/auth/me");
       const mId = mentorId || resMe.data.user.id;
-      const res = await api.get(`/tasks/mentor/${mId}`);
-      setTasks(res.data || []);
+      const [resTasks, resMentees] = await Promise.all([
+        api.get(`/tasks/mentor/${mId}`),
+        api.get("/mentor/mentees"),
+      ]);
+      setTasks(resTasks.data || []);
+      setMentees(resMentees.data || []);
       setForm((f) => ({ ...f, mentorId: mId }));
     } catch (err: any) {
       setError("Could not load tasks");
@@ -50,13 +55,9 @@ export default function MentorTasksPage() {
   const createTask = async () => {
     try {
       setError(null);
-      const assignedIds = form.assignedUserIds
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-      await api.post("/tasks", { ...form, assignedUserIds: assignedIds });
+      await api.post("/tasks", { ...form, assignedUserIds: form.assignedUserIds });
       await loadTasks(form.mentorId);
-      setForm({ ...form, title: "", description: "", deadline: "", assignedUserIds: "" });
+      setForm({ ...form, title: "", description: "", deadline: "", assignedUserIds: [] });
     } catch {
       setError("Failed to create task");
     }
@@ -66,7 +67,7 @@ export default function MentorTasksPage() {
     <SectionContainer className="py-10 space-y-6">
       <div className="space-y-2">
         <h1 className="text-3xl font-semibold">Mentor Task Board</h1>
-        <p className="text-slate-400">Create tasks and track submissions.</p>
+        <p className="text-neutral-500">Create tasks and track submissions.</p>
       </div>
 
       <Card className="p-5 space-y-3">
@@ -76,26 +77,41 @@ export default function MentorTasksPage() {
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
             placeholder="Title"
-            className="rounded-lg bg-slate-900 border border-slate-800 px-3 py-2"
+            className="rounded-lg bg-neutral-900 border border-neutral-800 px-3 py-2"
           />
           <input
             value={form.difficulty}
             onChange={(e) => setForm({ ...form, difficulty: e.target.value })}
             placeholder="Difficulty (easy/medium/hard)"
-            className="rounded-lg bg-slate-900 border border-slate-800 px-3 py-2"
+            className="rounded-lg bg-neutral-900 border border-neutral-800 px-3 py-2"
           />
           <input
             type="datetime-local"
             value={form.deadline}
             onChange={(e) => setForm({ ...form, deadline: e.target.value })}
-            className="rounded-lg bg-slate-900 border border-slate-800 px-3 py-2"
+            className="rounded-lg bg-neutral-900 border border-neutral-800 px-3 py-2"
           />
-          <input
-            value={form.assignedUserIds}
-            onChange={(e) => setForm({ ...form, assignedUserIds: e.target.value })}
-            placeholder="Assign to user IDs (comma separated)"
-            className="rounded-lg bg-slate-900 border border-slate-800 px-3 py-2"
-          />
+          <div className="rounded-lg bg-slate-900 border border-slate-800 px-3 py-2">
+            <label className="text-xs text-slate-400">Assign to mentees</label>
+            <select
+              multiple
+              value={form.assignedUserIds}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  assignedUserIds: Array.from(e.target.selectedOptions).map((o) => o.value),
+                })
+              }
+              className="w-full bg-transparent text-sm text-white outline-none"
+            >
+              {mentees.length === 0 && <option value="">No mentees available</option>}
+              {mentees.map((m) => (
+                <option key={m.id} value={m.id} className="bg-slate-900">
+                  {m.name} ({m.email})
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
         <textarea
           value={form.description}
