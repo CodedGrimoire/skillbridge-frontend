@@ -16,13 +16,21 @@ export default function MentorSearchPage() {
   const [review, setReview] = useState<Review>({ rating: 5, comment: "" });
   const [loading, setLoading] = useState(true);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
+  const [myMentor, setMyMentor] = useState<MentorProfile | null>(null);
 
   useEffect(() => {
     const load = async () => {
       const res = await api.get("/mentor/mentors");
       setMentors(res.data || []);
       const mt = await api.get("/mentor/meetings").catch(() => ({ data: [] }));
-      setMeetings(mt.data || []);
+      const mtData: Meeting[] = mt.data || [];
+      setMeetings(mtData);
+      // deduce current mentor from meetings where user is mentee
+      const accepted = mtData.find((m) => m.status !== "cancelled");
+      if (accepted) {
+        const mentorProfile = (res.data || []).find((m: MentorProfile) => m.id === accepted.mentorId);
+        if (mentorProfile) setMyMentor(mentorProfile);
+      }
       setLoading(false);
     };
     load();
@@ -47,11 +55,48 @@ export default function MentorSearchPage() {
   return (
     <SectionContainer>
       <div className="py-10 space-y-6 max-w-5xl mx-auto">
+        {myMentor && (
+          <div className="card p-5 space-y-2">
+            <p className="text-sm text-neutral-500">My Mentor</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-lg font-semibold text-white">{myMentor.name}</p>
+                <p className="text-xs text-neutral-500">{myMentor.email}</p>
+              </div>
+              <span className="text-xs px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                Active
+              </span>
+            </div>
+            <div className="flex flex-col md:flex-row md:items-center gap-2">
+              <input
+                type="number"
+                min={1}
+                max={5}
+                value={review.rating}
+                onChange={(e) => setReview({ ...review, rating: Number(e.target.value) })}
+                className="w-24 text-xs rounded border border-neutral-800 bg-neutral-900 text-neutral-100 px-3 py-2"
+              />
+              <input
+                value={review.comment}
+                onChange={(e) => setReview({ ...review, comment: e.target.value })}
+                placeholder="Leave a comment"
+                className="flex-1 text-xs rounded border border-neutral-800 bg-neutral-900 text-neutral-100 px-3 py-2"
+              />
+              <button
+                onClick={() => submitReview(myMentor.id)}
+                className="px-4 py-2 rounded-md bg-indigo-500 hover:bg-indigo-400 text-white text-xs font-semibold"
+              >
+                Rate Mentor
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="card p-6 space-y-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div>
               <h1 className="text-2xl font-semibold">Job Search Mentors</h1>
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-neutral-500">
                 Browse mentors and send an invitation. You can also leave ratings after mentoring.
               </p>
             </div>
@@ -59,23 +104,23 @@ export default function MentorSearchPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search mentors by name or email"
-              className="w-full md:w-64 rounded-lg bg-slate-900 border border-slate-800 px-3 py-2 text-sm text-slate-100"
+              className="w-full md:w-64 rounded-lg bg-neutral-900 border border-neutral-800 px-3 py-2 text-sm text-neutral-100"
             />
           </div>
 
           <div className="space-y-3">
-            {loading && <p className="text-sm text-gray-500">Loading mentors...</p>}
+            {loading && <p className="text-sm text-neutral-500">Loading mentors...</p>}
             {!loading &&
               filtered.map((m) => (
                 <div
                   key={m.id}
-                  className="flex flex-col md:flex-row md:items-center justify-between gap-3 border border-slate-800 rounded-lg px-4 py-3 bg-slate-900"
+                  className="flex flex-col md:flex-row md:items-center justify-between gap-3 border border-neutral-800 rounded-lg px-4 py-3 bg-neutral-900"
                 >
                   <div>
                     <p className="text-sm font-semibold text-white">{m.name}</p>
-                    <p className="text-xs text-slate-400">{m.email}</p>
+                    <p className="text-xs text-neutral-500">{m.email}</p>
                     {m.mentorProfile?.title && (
-                      <p className="text-xs text-slate-400">{m.mentorProfile.title}</p>
+                      <p className="text-xs text-neutral-500">{m.mentorProfile.title}</p>
                     )}
                     {m.mentorProfile?.rating && (
                       <p className="text-xs text-amber-400">★ {m.mentorProfile.rating.toFixed(1)}</p>
@@ -87,11 +132,11 @@ export default function MentorSearchPage() {
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="Message"
-                        className="flex-1 text-xs rounded border border-slate-800 bg-slate-950 text-slate-100 px-3 py-2"
+                        className="flex-1 text-xs rounded border border-neutral-800 bg-neutral-950 text-neutral-100 px-3 py-2"
                       />
                       <button
                         onClick={() => requestMentor(m.id)}
-                        className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold"
+                        className="px-4 py-2 rounded-md bg-indigo-500 hover:bg-indigo-400 text-white text-xs font-semibold"
                       >
                         Request
                       </button>
