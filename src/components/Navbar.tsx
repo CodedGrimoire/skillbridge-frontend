@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
-import { Menu, X, Sparkles, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
+import { FaRobot } from "react-icons/fa6";
 import classNames from "classnames";
 
 export default function Navbar() {
@@ -37,7 +38,7 @@ export default function Navbar() {
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2 text-xl font-semibold text-white">
             <span className="h-9 w-9 rounded-md bg-neutral-900 border border-neutral-800 flex items-center justify-center text-white">
-              <Sparkles className="h-5 w-5" />
+              <FaRobot className="h-5 w-5" />
             </span>
             SkillBridge AI
           </Link>
