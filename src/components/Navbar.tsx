@@ -26,7 +26,7 @@ export default function Navbar() {
           { href: "/career-path", label: "Career" },
           { href: "/market", label: "Market" },
           { href: "/mentor/tasks", label: "Tasks" },
-          { href: "/courses", label: "Courses" },
+          { href: "/mentor/courses", label: "Courses" },
         ]
       : [
           { href: "/dashboard", label: "Dashboard" },
