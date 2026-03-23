@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import api from "../../services/api";
 import DashboardStats from "../../components/DashboardStats";
 import LoadingCard from "../../components/LoadingCard";
 import UploadResume from "../../components/UploadResume";
 import { useRequireAuth } from "../../hooks/useRequireAuth";
+import { useAuth } from "../../hooks/useAuth";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import Card from "../../components/ui/Card";
 
@@ -23,6 +25,8 @@ type HistoryItem = { id: string; role: string; matchScore: number; createdAt: st
 type Todo = { id: string; name: string; status: "pending" | "in_progress" | "done" };
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const { user } = useAuth();
   const { loading: authLoading } = useRequireAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [skills, setSkills] = useState<string[]>([]);
@@ -72,9 +76,15 @@ export default function DashboardPage() {
     }
   };
 
+  // If the logged user is a mentor/admin, send them to the mentor/admin dashboard immediately.
   useEffect(() => {
-    if (!authLoading) loadDashboard();
-  }, [authLoading]);
+    if (authLoading) return;
+    if (user?.role === "ADMIN" || user?.role === "MENTOR") {
+      router.replace("/admin/dashboard");
+      return;
+    }
+    loadDashboard();
+  }, [authLoading, user?.role, router]);
 
   const barData = useMemo(() => {
     const matched = latest?.matchedSkills?.length ?? 0;

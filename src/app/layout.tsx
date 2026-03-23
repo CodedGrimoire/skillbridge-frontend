@@ -1,7 +1,7 @@
 import "../styles/globals.css";
 import type { Metadata } from "next";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+import { AuthProvider } from "../hooks/useAuth";
+import AppShell from "../components/AppShell";
 
 export const metadata: Metadata = {
   title: "AI Skill Gap Analyzer",
@@ -12,9 +12,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="dark bg-black">
       <body className="min-h-screen flex flex-col">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        <AuthProvider>
+          <AppShell>{children}</AppShell>
+        </AuthProvider>
       </body>
     </html>
   );
