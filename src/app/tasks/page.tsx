@@ -55,32 +55,32 @@ export default function UserTasksPage() {
 
       <Card className="p-5 space-y-3">
         {loading ? (
-          <p className="text-sm text-slate-400">Loading...</p>
+          <p className="text-sm text-neutral-500">Loading...</p>
         ) : assignments.length === 0 ? (
-          <p className="text-sm text-slate-400">No tasks assigned.</p>
+          <p className="text-sm text-neutral-500">No tasks assigned.</p>
         ) : (
           <div className="space-y-3">
             {assignments.map((a) => (
-              <div key={a.id} className="border border-slate-800 rounded-lg p-3 space-y-2">
+              <div key={a.id} className="border border-neutral-800 rounded-lg p-3 space-y-2">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-semibold">{a.task.title}</p>
-                    <p className="text-xs text-slate-400">
+                    <p className="font-semibold text-white">{a.task.title}</p>
+                    <p className="text-xs text-neutral-500">
                       {a.task.difficulty} · Due {new Date(a.task.deadline).toLocaleString()}
                     </p>
                   </div>
                   <span className={`text-xs px-3 py-1 rounded-full ${badgeClass(a.status)}`}>{a.status}</span>
                 </div>
-                <p className="text-sm text-slate-300">{a.task.description}</p>
+                <p className="text-sm text-neutral-300">{a.task.description}</p>
                 {a.submission ? (
-                  <div className="text-sm text-slate-300 space-y-1">
+                  <div className="text-sm text-neutral-300 space-y-1">
                     <p>
                       Submission:{" "}
-                      <a className="text-accent" href={a.submission.link} target="_blank" rel="noreferrer">
+                      <a className="text-indigo-400" href={a.submission.link} target="_blank" rel="noreferrer">
                         {a.submission.link}
                       </a>
                     </p>
-                    <p className="text-xs text-slate-400">Feedback: {a.submission.feedback || "—"}</p>
+                    <p className="text-xs text-neutral-500">Feedback: {a.submission.feedback || "—"}</p>
                   </div>
                 ) : (
                   <div className="space-y-2">
@@ -88,10 +88,10 @@ export default function UserTasksPage() {
                       value={submissionLink[a.id] || ""}
                       onChange={(e) => setSubmissionLink((prev) => ({ ...prev, [a.id]: e.target.value }))}
                       placeholder="Submission URL (GitHub/Live link)"
-                      className="w-full rounded-lg bg-slate-900 border border-slate-800 px-3 py-2 text-sm"
+                      className="w-full rounded-lg bg-neutral-900 border border-neutral-800 px-3 py-2 text-sm"
                     />
                     <button
-                      className="px-3 py-1 rounded bg-blue-600 text-white text-xs"
+                      className="px-3 py-1 rounded bg-indigo-500 text-white text-xs hover:bg-indigo-400"
                       onClick={() => submit(a.id)}
                       disabled={!submissionLink[a.id]}
                     >
