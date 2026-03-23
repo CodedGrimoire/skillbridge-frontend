@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
 import SectionContainer from "../../components/ui/SectionContainer";
+import Card from "../../components/ui/Card";
 import { useAuth } from "../../hooks/useAuth";
 import { Sparkles } from "lucide-react";
 
