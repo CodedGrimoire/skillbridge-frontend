@@ -7,24 +7,21 @@
 }
 
 body {
-  @apply bg-slate-950 text-slate-100 antialiased;
-  background: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.08), transparent 25%),
-    radial-gradient(circle at 80% 0%, rgba(168, 85, 247, 0.08), transparent 22%),
-    #0b1224;
+  @apply bg-black text-white antialiased;
 }
 
 a {
-  @apply text-accent hover:text-accent2 transition-colors;
+  @apply text-white hover:underline transition-colors;
 }
 
 .card {
-  @apply bg-card/80 backdrop-blur rounded-xl shadow-soft border border-slate-800;
+  @apply bg-neutral-900 border border-neutral-800 rounded-lg shadow-sm;
 }
 
 .btn-primary {
-  @apply inline-flex items-center justify-center px-4 py-2 rounded-lg bg-accent text-slate-900 font-semibold hover:bg-accent/80 transition;
+  @apply inline-flex items-center justify-center px-4 py-2 rounded-md bg-white text-black font-medium hover:bg-neutral-200 transition duration-200 ease-in-out;
 }
 
 .btn-secondary {
-  @apply inline-flex items-center justify-center px-4 py-2 rounded-lg border border-accent text-accent font-semibold hover:bg-accent/10 transition;
+  @apply inline-flex items-center justify-center px-4 py-2 rounded-md border border-neutral-700 text-neutral-200 font-medium hover:bg-neutral-800 transition duration-200 ease-in-out;
 }

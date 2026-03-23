@@ -11,8 +11,8 @@ export default function Card({ children, className }: CardProps) {
   return (
     <div
       className={classNames(
-        "rounded-xl border border-slate-800 bg-slate-900/60 shadow-md backdrop-blur",
-        "transition hover:-translate-y-0.5 hover:shadow-lg",
+        "rounded-lg border border-neutral-800 bg-neutral-900 shadow-sm",
+        "transition duration-200 ease-in-out hover:bg-neutral-800",
         className
       )}
     >

@@ -76,7 +76,7 @@ export default function MarketPage() {
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.05 }}
-                    className="px-3 py-2 rounded-full bg-gradient-to-r from-accent/20 via-accent2/20 to-accent/20 text-accent text-sm border border-accent/30 shadow-sm hover:scale-[1.03] transition"
+                    className="px-3 py-2 rounded-full bg-neutral-800 text-white text-sm border border-neutral-700 shadow-sm hover:bg-neutral-700 transition"
                   >
                     {skill}
                   </motion.span>
@@ -105,7 +105,7 @@ export default function MarketPage() {
                     </div>
                     <div className="h-3 w-full rounded-full bg-slate-800 overflow-hidden">
                       <motion.div
-                        className="h-3 rounded-full bg-gradient-to-r from-accent to-accent2"
+                        className="h-3 rounded-full bg-white"
                         initial={{ width: 0 }}
                         animate={{ width: `${item.score}%` }}
                         transition={{ delay: i * 0.05, type: "spring", stiffness: 120, damping: 20 }}

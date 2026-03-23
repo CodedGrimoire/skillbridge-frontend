@@ -33,13 +33,13 @@ export default function Navbar() {
         ];
 
   return (
-    <nav className="sticky top-0 z-30 bg-slate-950/80 backdrop-blur border-b border-slate-800">
+    <nav className="sticky top-0 z-30 bg-black border-b border-neutral-800">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link href="/" className="flex items-center gap-2 text-xl font-semibold">
-          <span className="h-9 w-9 rounded-lg bg-gradient-to-br from-accent to-accent2 flex items-center justify-center text-slate-950 shadow-md">
+          <span className="h-9 w-9 rounded-md bg-neutral-900 border border-neutral-800 flex items-center justify-center text-white">
             <Sparkles className="h-5 w-5" />
           </span>
-          SkillGap AI
+          SkillBridge AI
         </Link>
 
         <button className="md:hidden" onClick={() => setOpen((o) => !o)} aria-label="Toggle menu">
@@ -58,7 +58,7 @@ export default function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-slate-200 hover:text-accent transition"
+                className="text-neutral-200 hover:text-white transition underline-offset-4 hover:underline"
                 onClick={() => setOpen(false)}
               >
                 {item.label}
@@ -69,8 +69,8 @@ export default function Navbar() {
           <div className="flex items-center gap-3 mt-4 md:mt-0">
             {user ? (
               <>
-                <span className="text-sm text-slate-300">Hi, {user.name}</span>
-                <span className="text-xs px-2 py-1 rounded-full bg-accent/10 text-accent">
+                <span className="text-sm text-neutral-200">Hi, {user.name}</span>
+                <span className="text-xs px-2 py-1 rounded border border-neutral-700 text-neutral-300">
                   {user.role === "ADMIN" ? "Mentor" : "Jobseeker"}
                 </span>
                 <button className="btn-secondary text-sm" onClick={logout}>

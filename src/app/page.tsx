@@ -31,12 +31,9 @@ const testimonials = [
 export default function HomePage() {
   return (
     <div className="space-y-20 pb-16">
-      <div className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-accent2/10" />
-        <SectionContainer>
-          <HeroSection />
-        </SectionContainer>
-      </div>
+      <SectionContainer>
+        <HeroSection />
+      </SectionContainer>
 
       <SectionContainer>
         <FeatureSection />
@@ -48,12 +45,12 @@ export default function HomePage() {
           <div className="grid gap-6 md:grid-cols-3">
             {steps.map((step, i) => (
               <Card key={step.title} className="p-5 space-y-3">
-                <div className="flex items-center gap-2 text-accent">
-                  <span className="h-9 w-9 rounded-full bg-accent/10 flex items-center justify-center">{step.icon}</span>
+                <div className="flex items-center gap-2 text-white">
+                  <span className="h-9 w-9 rounded-md bg-neutral-800 border border-neutral-700 flex items-center justify-center">{step.icon}</span>
                   <p className="font-semibold">Step {i + 1}</p>
                 </div>
                 <h3 className="text-xl font-semibold">{step.title}</h3>
-                <p className="text-slate-300 text-sm">{step.desc}</p>
+                <p className="text-neutral-400 text-sm">{step.desc}</p>
               </Card>
             ))}
           </div>
@@ -66,8 +63,8 @@ export default function HomePage() {
           <div className="grid gap-6 md:grid-cols-3">
             {testimonials.map((t) => (
               <Card key={t.name} className="p-5 space-y-3">
-                <p className="text-slate-200 text-sm leading-relaxed">“{t.quote}”</p>
-                <p className="text-sm text-accent">{t.name}</p>
+                <p className="text-neutral-200 text-sm leading-relaxed">“{t.quote}”</p>
+                <p className="text-sm text-neutral-400">{t.name}</p>
               </Card>
             ))}
           </div>
@@ -75,10 +72,9 @@ export default function HomePage() {
       </SectionContainer>
 
       <SectionContainer>
-        <Card className="p-10 text-center space-y-4 relative overflow-hidden">
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-accent/10 via-transparent to-accent2/10" />
+        <Card className="p-10 text-center space-y-4">
           <h3 className="text-3xl font-semibold">Ready to see your skill gap?</h3>
-          <p className="text-slate-300">
+          <p className="text-neutral-400">
             Upload your resume on the dashboard to auto-run analysis, then track your gaps, to-dos, mentors, and meetings in one flow.
           </p>
           <div className="flex justify-center gap-3">

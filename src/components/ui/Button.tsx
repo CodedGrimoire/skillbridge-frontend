@@ -7,11 +7,11 @@ type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 // Reusable button with SaaS-friendly variants.
 export default function Button({ variant = "primary", className, children, ...props }: ButtonProps) {
   const base =
-    "inline-flex items-center justify-center rounded-lg font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-slate-950";
+    "inline-flex items-center justify-center rounded-md font-medium transition duration-200 ease-in-out focus:outline-none focus:ring-0";
   const variants: Record<string, string> = {
-    primary: "bg-accent text-slate-900 hover:bg-accent/90 px-4 py-2",
-    secondary: "border border-accent text-accent hover:bg-accent/10 px-4 py-2",
-    ghost: "text-slate-200 hover:text-accent px-3 py-2",
+    primary: "bg-white text-black hover:bg-neutral-200 px-4 py-2",
+    secondary: "border border-neutral-700 text-neutral-200 hover:bg-neutral-800 px-4 py-2",
+    ghost: "text-neutral-200 hover:text-white px-3 py-2",
   };
 
   return (
