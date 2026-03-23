@@ -25,6 +25,7 @@ export default function MentorTasksPage() {
     description: "",
     deadline: "",
     difficulty: "medium",
+    fullMarks: 100,
     mentorId: "",
     assignedUserIds: [] as string[],
   });
@@ -57,7 +58,7 @@ export default function MentorTasksPage() {
       setError(null);
       await api.post("/tasks", { ...form, assignedUserIds: form.assignedUserIds });
       await loadTasks(form.mentorId);
-      setForm({ ...form, title: "", description: "", deadline: "", assignedUserIds: [] });
+      setForm({ ...form, title: "", description: "", deadline: "", assignedUserIds: [], fullMarks: 100 });
     } catch {
       setError("Failed to create task");
     }
@@ -79,12 +80,28 @@ export default function MentorTasksPage() {
             placeholder="Title"
             className="rounded-lg bg-neutral-900 border border-neutral-800 px-3 py-2"
           />
-          <input
-            value={form.difficulty}
-            onChange={(e) => setForm({ ...form, difficulty: e.target.value })}
-            placeholder="Difficulty (easy/medium/hard)"
-            className="rounded-lg bg-neutral-900 border border-neutral-800 px-3 py-2"
-          />
+          <div className="rounded-lg bg-neutral-900 border border-neutral-800 px-3 py-2">
+            <label className="text-xs text-neutral-500">Difficulty</label>
+            <select
+              value={form.difficulty}
+              onChange={(e) => setForm({ ...form, difficulty: e.target.value })}
+              className="w-full bg-transparent text-sm text-white outline-none"
+            >
+              <option value="easy" className="bg-neutral-900">Easy</option>
+              <option value="medium" className="bg-neutral-900">Medium</option>
+              <option value="hard" className="bg-neutral-900">Hard</option>
+            </select>
+          </div>
+          <div className="rounded-lg bg-neutral-900 border border-neutral-800 px-3 py-2">
+            <label className="text-xs text-neutral-500">Full marks</label>
+            <input
+              type="number"
+              min={1}
+              value={form.fullMarks}
+              onChange={(e) => setForm({ ...form, fullMarks: Number(e.target.value) })}
+              className="w-full bg-transparent text-sm text-white outline-none"
+            />
+          </div>
           <input
             type="datetime-local"
             value={form.deadline}
@@ -138,7 +155,9 @@ export default function MentorTasksPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-semibold">{t.title}</p>
-                    <p className="text-xs text-slate-400">{t.difficulty} · Due {new Date(t.deadline).toLocaleString()}</p>
+                    <p className="text-xs text-slate-400">
+                      {t.difficulty} · {t.fullMarks ?? 100} pts · Due {new Date(t.deadline).toLocaleString()}
+                    </p>
                   </div>
                   <a href={`/mentor/tasks/${t.id}`} className="text-xs px-3 py-1 rounded bg-slate-800 text-white">
                     View

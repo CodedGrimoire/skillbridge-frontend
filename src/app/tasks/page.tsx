@@ -8,7 +8,7 @@ import SectionContainer from "../../components/ui/SectionContainer";
 type Assignment = {
   id: string;
   status: string;
-  task: { id: string; title: string; description: string; deadline: string; difficulty: string };
+  task: { id: string; title: string; description: string; deadline: string; difficulty: string; fullMarks?: number };
   submission?: { id: string; link: string; feedback?: string };
 };
 
@@ -66,7 +66,7 @@ export default function UserTasksPage() {
                   <div>
                     <p className="font-semibold text-white">{a.task.title}</p>
                     <p className="text-xs text-neutral-500">
-                      {a.task.difficulty} · Due {new Date(a.task.deadline).toLocaleString()}
+                      {a.task.difficulty} · {a.task.fullMarks ?? 100} pts · Due {new Date(a.task.deadline).toLocaleString()}
                     </p>
                   </div>
                   <span className={`text-xs px-3 py-1 rounded-full ${badgeClass(a.status)}`}>{a.status}</span>

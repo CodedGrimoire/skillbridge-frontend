@@ -19,6 +19,7 @@ type Task = {
   description: string;
   deadline: string;
   difficulty: string;
+  fullMarks?: number;
   assignments: Assignment[];
 };
 
@@ -80,7 +81,7 @@ export default function MentorTaskDetailPage() {
         <h1 className="text-3xl font-semibold">{task.title}</h1>
         <p className="text-slate-400">{task.description}</p>
         <p className="text-xs text-slate-500">
-          {task.difficulty} · Due {new Date(task.deadline).toLocaleString()}
+          {task.difficulty} · {task.fullMarks ?? 100} pts · Due {new Date(task.deadline).toLocaleString()}
         </p>
       </div>
 
