@@ -98,7 +98,7 @@ export default function GapAnalysisPage() {
     <AdminLayout title="Skill Gap Analyzer">
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-6 space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h2 className="text-2xl font-semibold dark:text-white">Skill Gap Analyzer</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -108,7 +108,7 @@ export default function GapAnalysisPage() {
             <button
               onClick={analyze}
               disabled={loading}
-              className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition disabled:opacity-70"
+              className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition disabled:opacity-70 w-full sm:w-auto"
             >
               {loading && <span className="h-4 w-4 rounded-full border-b-2 border-white animate-spin mr-2" />}
               Analyze Resume

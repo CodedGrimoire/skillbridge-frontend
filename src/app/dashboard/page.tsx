@@ -215,12 +215,12 @@ export default function DashboardPage() {
 
       {/* Capability Analysis */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h2 className="text-xl font-semibold">Resume Fit & Capable Roles</h2>
           <button
             onClick={runCapabilityAnalysis}
             disabled={capLoading || autoAnalyzing}
-            className="btn-primary px-4 py-2 text-sm"
+            className="btn-primary px-4 py-2 text-sm w-full sm:w-auto"
           >
             {capLoading || autoAnalyzing ? "Analyzing..." : "Re-run Analysis"}
           </button>
@@ -295,12 +295,12 @@ export default function DashboardPage() {
         <h2 className="text-xl font-semibold">Analysis History</h2>
         {history.length === 0 && <p className="text-sm text-slate-400">No past analyses.</p>}
         {history.map((h) => (
-          <div key={h.id} className="flex items-center justify-between border border-slate-800 rounded-lg px-3 py-2">
-            <div>
+          <div key={h.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border border-slate-800 rounded-lg px-3 py-2">
+            <div className="w-full">
               <p className="text-sm font-semibold">{h.role}</p>
               <p className="text-xs text-slate-400">{new Date(h.createdAt).toLocaleString()}</p>
             </div>
-            <span className="text-sm font-semibold text-green-400">
+            <span className="text-sm font-semibold text-green-400 sm:text-right w-full sm:w-auto">
               {h.matchScore?.toFixed ? h.matchScore.toFixed(1) : h.matchScore}
             </span>
           </div>
@@ -341,7 +341,7 @@ export default function DashboardPage() {
       )}
 
       <div className="card p-5 space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <h3 className="text-lg font-semibold">Missing Skill To-Do</h3>
           {!capability && <span className="text-xs text-slate-500">Run analysis to refresh this list.</span>}
         </div>
@@ -350,13 +350,13 @@ export default function DashboardPage() {
           {todos.map((t) => (
             <div
               key={t.id}
-              className="flex items-center justify-between border border-slate-800 rounded-lg px-3 py-2"
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border border-slate-800 rounded-lg px-3 py-2"
             >
-              <span className="text-sm">{t.name}</span>
+              <span className="text-sm w-full">{t.name}</span>
               <select
                 value={t.status}
                 onChange={(e) => updateTodoStatus(t.id, e.target.value as Todo["status"])}
-                className="text-xs rounded bg-slate-900 border border-slate-700 px-2 py-1"
+                className="text-xs rounded bg-slate-900 border border-slate-700 px-2 py-1 w-full sm:w-auto"
               >
                 <option value="pending">pending</option>
                 <option value="in_progress">in progress</option>

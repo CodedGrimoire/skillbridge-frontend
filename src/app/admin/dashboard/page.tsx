@@ -83,9 +83,9 @@ export default function AdminDashboardPage() {
           {pending.map((r) => (
             <div
               key={r.id}
-              className="flex items-center justify-between border border-white/10 rounded-lg px-3 py-3 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition"
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-white/10 rounded-lg px-3 py-3 bg-white/5 backdrop-blur-sm hover:bg-white/10 transition"
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 w-full">
                 <div className="h-10 w-10 rounded-full bg-indigo-500/15 border border-indigo-500/20 flex items-center justify-center text-indigo-200 text-sm">
                   {r.user.name[0]}
                 </div>
@@ -95,7 +95,7 @@ export default function AdminDashboardPage() {
                   {r.message && <p className="text-xs text-neutral-500 mt-1">“{r.message}”</p>}
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                 <a
                   href={`/admin/users/${r.user.id}`}
                   className="text-xs px-4 py-2 rounded-lg border border-white/10 text-neutral-200 hover:bg-white/5 transition"
@@ -124,13 +124,13 @@ export default function AdminDashboardPage() {
           {accepted.map((r) => (
             <div
               key={r.id}
-              className="flex items-center justify-between border border-white/10 rounded-lg px-3 py-3 bg-white/5 backdrop-blur-sm"
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-white/10 rounded-lg px-3 py-3 bg-white/5 backdrop-blur-sm"
             >
-              <div>
+              <div className="w-full">
                 <p className="text-sm font-semibold">{r.user.name}</p>
                 <p className="text-xs text-slate-400">{r.user.email}</p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
                 <a
                   href={`/admin/mentorship?userId=${r.user.id}`}
                   className="text-xs px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
@@ -168,15 +168,15 @@ export default function AdminDashboardPage() {
           {jobseekers.map((js) => (
             <div
               key={js.id}
-              className="flex items-center justify-between border border-white/10 rounded-lg px-3 py-3 bg-white/5 backdrop-blur-sm"
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-white/10 rounded-lg px-3 py-3 bg-white/5 backdrop-blur-sm"
             >
-              <div>
+              <div className="w-full">
                 <p className="text-sm font-semibold">{js.name}</p>
                 <p className="text-xs text-slate-400">{js.email}</p>
               </div>
               <a
                 href={`/admin/mentorship?userId=${js.id}`}
-                className="text-xs px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
+                className="text-xs px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700 w-full sm:w-auto text-center"
               >
                 View profile
               </a>
@@ -221,7 +221,7 @@ function CardBlock({
 }) {
   return (
     <div className={`rounded-xl border border-white/10 bg-white/5 backdrop-blur-md p-6 space-y-3 ${className}`}>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
           <h3 className="text-lg font-semibold">{title}</h3>
           {subtitle && <p className="text-sm text-white/60">{subtitle}</p>}

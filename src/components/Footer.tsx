@@ -1,9 +1,9 @@
 export default function Footer() {
   return (
     <footer className="border-t border-slate-800 bg-slate-950/80">
-      <div className="mx-auto max-w-6xl px-4 py-6 flex items-center justify-between text-sm text-slate-400">
+      <div className="mx-auto max-w-6xl px-4 py-6 flex flex-col sm:flex-row gap-2 sm:gap-4 items-center justify-between text-sm text-slate-400 text-center sm:text-left">
         <span>© {new Date().getFullYear()} SkillGap AI</span>
-        <span>Built with Next.js, Tailwind, and Express API</span>
+        <span className="text-xs sm:text-sm">Built with Next.js, Tailwind, and Express API</span>
       </div>
     </footer>
   );

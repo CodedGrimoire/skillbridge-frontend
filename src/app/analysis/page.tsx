@@ -159,9 +159,9 @@ function AnalysisInner() {
               {result.recommendedNextSkills?.length ? (
                 <ul className="space-y-2 text-sm text-slate-200">
                   {result.recommendedNextSkills.slice(0, 5).map((r: any) => (
-                    <li key={r.skill} className="flex justify-between">
-                      <span>{r.skill}</span>
-                      <span className="text-accent">{r.roiScore}</span>
+                    <li key={r.skill} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                      <span className="w-full">{r.skill}</span>
+                      <span className="text-accent sm:text-right">{r.roiScore}</span>
                     </li>
                   ))}
                 </ul>

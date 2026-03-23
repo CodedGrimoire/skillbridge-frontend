@@ -17,7 +17,7 @@ export default function DashboardStats({ matchScore = 0, matchedSkills = [], mis
   ];
 
   return (
-    <div className="grid md:grid-cols-2 gap-6">
+    <div className="grid gap-6 sm:grid-cols-2">
       <div className="card p-6 space-y-4">
         <p className="text-slate-400 text-sm">Match Score</p>
         <div className="h-48">
@@ -34,7 +34,7 @@ export default function DashboardStats({ matchScore = 0, matchedSkills = [], mis
         <p className="text-3xl font-semibold">{matchScore}%</p>
       </div>
 
-      <div className="card p-6 grid grid-cols-2 gap-4">
+      <div className="card p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <p className="text-sm text-slate-400 mb-2">Matched Skills</p>
           <ul className="space-y-2 text-sm">

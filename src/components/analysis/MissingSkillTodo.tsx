@@ -26,7 +26,7 @@ export default function MissingSkillTodo({ items, onUpdate, onAdd, onDelete }: P
             input.value = "";
           }
         }}
-        className="flex gap-2"
+        className="flex flex-col sm:flex-row gap-2"
       >
         <input
           name="skill"
@@ -35,7 +35,7 @@ export default function MissingSkillTodo({ items, onUpdate, onAdd, onDelete }: P
         />
         <button
           type="submit"
-          className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm"
+          className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm w-full sm:w-auto"
         >
           Add
         </button>
@@ -48,17 +48,17 @@ export default function MissingSkillTodo({ items, onUpdate, onAdd, onDelete }: P
         {items.map((item) => (
           <div
             key={item.id}
-            className="flex items-center justify-between border border-gray-100 dark:border-gray-800 rounded-lg px-3 py-2"
+            className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-gray-100 dark:border-gray-800 rounded-lg px-3 py-2"
           >
             <div>
               <p className="text-sm font-medium dark:text-white">{item.name}</p>
               <p className="text-xs text-gray-500 capitalize">{item.status.replace('_', ' ')}</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
               <select
                 value={item.status}
                 onChange={(e) => onUpdate(item.id, e.target.value as Todo["status"])}
-                className="text-xs rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2 py-1"
+                className="text-xs rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2 py-1 flex-1 sm:flex-none"
               >
                 {statuses.map((s) => (
                   <option key={s} value={s}>

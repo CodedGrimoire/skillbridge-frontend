@@ -39,8 +39,8 @@ export default function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 bg-black border-b border-neutral-800 backdrop-blur-sm">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
-        <div className="flex items-center gap-8">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="flex items-center justify-between gap-3 py-3">
           <Link href="/" className="flex items-center gap-2 text-xl font-semibold text-white">
             <span className="h-9 w-9 rounded-md bg-neutral-900 border border-neutral-800 flex items-center justify-center text-white">
               <FaRobot className="h-5 w-5" />
@@ -48,18 +48,17 @@ export default function Navbar() {
             SkillBridge AI
           </Link>
 
-          <button className="md:hidden" onClick={() => setOpen((o) => !o)} aria-label="Toggle menu">
-            {open ? <X className="h-6 w-6 text-white" /> : <Menu className="h-6 w-6 text-white" />}
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              className="md:hidden text-white"
+              onClick={() => setOpen((o) => !o)}
+              aria-label="Toggle menu"
+              aria-expanded={open}
+            >
+              {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
 
-          <div
-            className={classNames(
-              "md:flex md:items-center md:gap-6",
-              "flex-col md:flex-row w-full md:w-auto mt-4 md:mt-0",
-              open ? "flex" : "hidden md:flex"
-            )}
-          >
-            <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
+            <div className="hidden md:flex md:items-center md:gap-6">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
@@ -68,71 +67,161 @@ export default function Navbar() {
                     "text-neutral-400 hover:text-white transition duration-200 pb-1 border-b-2 border-transparent",
                     pathname === item.href && "text-white border-white"
                   )}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+
+            <div className="hidden md:flex items-center gap-3">
+              {user ? (
+                <details className="relative">
+                  <summary className="flex items-center gap-2 cursor-pointer list-none">
+                    <div className="h-8 w-8 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center text-sm text-white">
+                      {user.name?.[0] || "U"}
+                    </div>
+                    <div className="flex flex-col leading-tight">
+                      <span className="text-sm text-white">{user.name}</span>
+                      <span className="text-xs text-neutral-500">
+                        {user.role === "ADMIN" ? "Mentor" : "Jobseeker"}
+                      </span>
+                    </div>
+                    <ChevronDown className="h-4 w-4 text-neutral-500" />
+                  </summary>
+                  <div className="absolute right-0 mt-2 w-44 bg-neutral-900 border border-neutral-800 rounded-md shadow-sm py-2 z-50">
+                    <Link href="/profile" className="block px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-800">
+                      Profile
+                    </Link>
+                    <Link href="/settings" className="block px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-800">
+                      Settings
+                    </Link>
+                    <button
+                      onClick={logout}
+                      className="w-full text-left px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-800"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </details>
+              ) : (
+                <>
+                  <Link href="/login" className="btn-secondary text-sm">
+                    Login
+                  </Link>
+                  <Link href="/register" className="btn-primary text-sm">
+                    Register
+                  </Link>
+                  <details className="relative">
+                    <summary className="cursor-pointer text-sm text-neutral-300">Demo logins</summary>
+                    <div className="absolute right-0 mt-2 w-48 bg-neutral-900 border border-neutral-800 rounded-lg p-2 space-y-1 z-50">
+                      {demoCreds.map((d) => (
+                        <button
+                          key={d.email}
+                          className="w-full text-left text-xs text-white px-2 py-1 rounded hover:bg-neutral-800"
+                          onClick={() => {
+                            localStorage.setItem("demo_email", d.email);
+                            localStorage.setItem("demo_password", d.password);
+                            window.location.href = "/login";
+                          }}
+                        >
+                          {d.label}
+                        </button>
+                      ))}
+                    </div>
+                  </details>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div
+          className={classNames(
+            "md:hidden grid transition-[grid-template-rows,opacity] duration-200",
+            open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0 pointer-events-none"
+          )}
+        >
+          <div className="overflow-hidden border-t border-neutral-800 py-3 space-y-4">
+            <div className="grid gap-3">
+              {navItems.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={classNames(
+                    "text-neutral-200 px-2 py-1 rounded hover:bg-neutral-900 transition",
+                    pathname === item.href && "bg-neutral-900 text-white"
+                  )}
                   onClick={() => setOpen(false)}
                 >
                   {item.label}
                 </Link>
               ))}
             </div>
-          </div>
-        </div>
 
-        <div className="flex items-center gap-3">
-          {user ? (
-            <details className="relative">
-              <summary className="flex items-center gap-2 cursor-pointer list-none">
-                <div className="h-8 w-8 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center text-sm text-white">
-                  {user.name?.[0] || "U"}
-                </div>
-                <div className="flex flex-col leading-tight">
-                  <span className="text-sm text-white">{user.name}</span>
-                  <span className="text-xs text-neutral-500">{user.role === "ADMIN" ? "Mentor" : "Jobseeker"}</span>
-                </div>
-                <ChevronDown className="h-4 w-4 text-neutral-500" />
-              </summary>
-              <div className="absolute right-0 mt-2 w-44 bg-neutral-900 border border-neutral-800 rounded-md shadow-sm py-2 z-50">
-                <Link href="/profile" className="block px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-800">
-                  Profile
-                </Link>
-                <Link href="/settings" className="block px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-800">
-                  Settings
-                </Link>
-                <button
-                  onClick={logout}
-                  className="w-full text-left px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-800"
-                >
-                  Logout
-                </button>
-              </div>
-            </details>
-          ) : (
-            <>
-              <Link href="/login" className="btn-secondary text-sm" onClick={() => setOpen(false)}>
-                Login
-              </Link>
-              <Link href="/register" className="btn-primary text-sm" onClick={() => setOpen(false)}>
-                Register
-              </Link>
-              <details className="relative">
-                <summary className="cursor-pointer text-sm text-neutral-300">Demo logins</summary>
-                <div className="absolute right-0 mt-2 w-48 bg-neutral-900 border border-neutral-800 rounded-lg p-2 space-y-1 z-50">
-                  {demoCreds.map((d) => (
+            <div className="grid gap-3">
+              {user ? (
+                <>
+                  <div className="flex items-center gap-3 px-2">
+                    <div className="h-9 w-9 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center text-sm text-white">
+                      {user.name?.[0] || "U"}
+                    </div>
+                    <div className="flex flex-col leading-tight">
+                      <span className="text-sm text-white">{user.name}</span>
+                      <span className="text-xs text-neutral-500">
+                        {user.role === "ADMIN" ? "Mentor" : "Jobseeker"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 px-2">
+                    <Link href="/profile" className="btn-secondary justify-center text-sm w-full" onClick={() => setOpen(false)}>
+                      Profile
+                    </Link>
+                    <Link href="/settings" className="btn-secondary justify-center text-sm w-full" onClick={() => setOpen(false)}>
+                      Settings
+                    </Link>
                     <button
-                      key={d.email}
-                      className="w-full text-left text-xs text-white px-2 py-1 rounded hover:bg-neutral-800"
                       onClick={() => {
-                        localStorage.setItem("demo_email", d.email);
-                        localStorage.setItem("demo_password", d.password);
-                        window.location.href = "/login";
+                        logout();
+                        setOpen(false);
                       }}
+                      className="col-span-2 btn-primary justify-center text-sm w-full"
                     >
-                      {d.label}
+                      Logout
                     </button>
-                  ))}
-                </div>
-              </details>
-            </>
-          )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 gap-2 px-2">
+                    <Link href="/login" className="btn-secondary justify-center text-sm w-full" onClick={() => setOpen(false)}>
+                      Login
+                    </Link>
+                    <Link href="/register" className="btn-primary justify-center text-sm w-full" onClick={() => setOpen(false)}>
+                      Register
+                    </Link>
+                  </div>
+                  <div className="border border-neutral-800 rounded-lg p-3 space-y-2">
+                    <p className="text-xs text-neutral-400">Demo logins</p>
+                    <div className="grid gap-2">
+                      {demoCreds.map((d) => (
+                        <button
+                          key={d.email}
+                          className="w-full text-left text-xs text-white px-2 py-1 rounded bg-neutral-900 hover:bg-neutral-800"
+                          onClick={() => {
+                            localStorage.setItem("demo_email", d.email);
+                            localStorage.setItem("demo_password", d.password);
+                            window.location.href = "/login";
+                          }}
+                        >
+                          {d.label} — {d.email}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </nav>
