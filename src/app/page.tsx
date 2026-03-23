@@ -44,9 +44,11 @@ export default function HomePage() {
           <h2 className="text-3xl font-semibold text-white">How It Works</h2>
           <div className="grid gap-6 md:grid-cols-3">
             {steps.map((step, i) => (
-              <Card key={step.title} className="p-5 space-y-3">
+              <Card key={step.title} className="p-5 space-y-3 hover:bg-neutral-800">
                 <div className="flex items-center gap-2 text-white">
-                  <span className="h-9 w-9 rounded-md bg-neutral-800 border border-neutral-700 flex items-center justify-center">{step.icon}</span>
+                  <span className="h-9 w-9 rounded-md bg-neutral-800 border border-neutral-700 flex items-center justify-center text-indigo-400">
+                    {step.icon}
+                  </span>
                   <p className="font-semibold">Step {i + 1}</p>
                 </div>
                 <h3 className="text-xl font-semibold">{step.title}</h3>
@@ -62,7 +64,7 @@ export default function HomePage() {
           <h2 className="text-3xl font-semibold text-white">What people say</h2>
           <div className="grid gap-6 md:grid-cols-3">
             {testimonials.map((t) => (
-              <Card key={t.name} className="p-5 space-y-3">
+              <Card key={t.name} className="p-5 space-y-3 hover:bg-neutral-800">
                 <p className="text-neutral-200 text-sm leading-relaxed">“{t.quote}”</p>
                 <p className="text-sm text-neutral-400">{t.name}</p>
               </Card>

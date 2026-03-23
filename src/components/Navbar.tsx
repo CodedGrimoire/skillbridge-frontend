@@ -54,16 +54,17 @@ export default function Navbar() {
           )}
         >
           <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="text-neutral-200 hover:text-white transition underline-offset-4 hover:underline"
-                onClick={() => setOpen(false)}
-              >
-                {item.label}
-              </Link>
-            ))}
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="text-neutral-200 hover:text-white transition underline-offset-4 hover:underline data-[active=true]:text-white data-[active=true]:border-b data-[active=true]:border-indigo-500 pb-1"
+              data-active={typeof window !== "undefined" && window.location.pathname === item.href}
+              onClick={() => setOpen(false)}
+            >
+              {item.label}
+            </Link>
+          ))}
           </div>
 
           <div className="flex items-center gap-3 mt-4 md:mt-0">

@@ -16,7 +16,7 @@ export default function FeatureSection() {
         {features.map((f) => (
           <Card key={f.title} className="p-5 space-y-3 hover:bg-neutral-800">
             <div className="flex items-center gap-2 text-white">
-              <span className="h-9 w-9 rounded-md bg-neutral-800 border border-neutral-700 flex items-center justify-center">{f.icon}</span>
+              <span className="h-9 w-9 rounded-md bg-neutral-800 border border-neutral-700 flex items-center justify-center text-indigo-400">{f.icon}</span>
               <h3 className="text-lg font-semibold text-white">{f.title}</h3>
             </div>
             <p className="text-neutral-400 text-sm leading-relaxed">{f.desc}</p>

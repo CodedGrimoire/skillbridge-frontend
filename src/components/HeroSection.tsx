@@ -9,7 +9,7 @@ export default function HeroSection() {
       <div className="grid gap-10 lg:grid-cols-2 items-center">
         <div className="space-y-6 text-center lg:text-left">
           <p className="inline-flex items-center gap-2 rounded-md border border-neutral-800 px-3 py-1 text-sm text-neutral-300">
-            <Sparkles className="h-4 w-4 text-neutral-300" />
+            <Sparkles className="h-4 w-4 text-indigo-400" />
             Skill Gap Analyzer
           </p>
           <h1 className="text-4xl md:text-5xl font-semibold leading-tight text-white">
@@ -43,7 +43,7 @@ export default function HeroSection() {
           <div className="grid grid-cols-2 gap-4">
             <div className="p-4 rounded-md bg-neutral-900 border border-neutral-800">
               <p className="text-xs text-neutral-500">Match Score</p>
-              <p className="text-3xl font-semibold text-white">82%</p>
+              <p className="text-3xl font-semibold text-indigo-400">82%</p>
             </div>
             <div className="p-4 rounded-md bg-neutral-900 border border-neutral-800">
               <p className="text-xs text-neutral-500">Detected Skills</p>
