@@ -55,13 +55,18 @@ export default function MentorTasksPage() {
   }, []);
 
   const createTask = async () => {
+    if (!form.title.trim() || !form.description.trim() || !form.deadline) {
+      setError("Title, description, and deadline are required");
+      return;
+    }
     try {
       setError(null);
       await api.post("/tasks", { ...form, assignedUserIds: form.assignedUserIds });
       await loadTasks(form.mentorId);
       setForm({ ...form, title: "", description: "", deadline: "", assignedUserIds: [], fullMarks: 100 });
-    } catch {
-      setError("Failed to create task");
+    } catch (err: any) {
+      const message = err?.response?.data?.message || "Failed to create task";
+      setError(message);
     }
   };
 
