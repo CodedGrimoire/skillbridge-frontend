@@ -13,8 +13,8 @@ const statuses: Todo["status"][] = ["pending", "in_progress", "done"];
 
 export default function MissingSkillTodo({ items, onUpdate, onAdd, onDelete }: Props) {
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl shadow p-4 space-y-3">
-      <h3 className="text-lg font-semibold dark:text-white">Missing Skill To-Do</h3>
+    <div className="sb-card p-4 space-y-3">
+      <h3 className="text-lg font-semibold">Missing Skill To-Do</h3>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -31,11 +31,11 @@ export default function MissingSkillTodo({ items, onUpdate, onAdd, onDelete }: P
         <input
           name="skill"
           placeholder="Add a missing skill"
-          className="flex-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="sb-input flex-1"
         />
         <button
           type="submit"
-          className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm w-full sm:w-auto"
+          className="sb-btn-primary text-sm w-full sm:w-auto"
         >
           Add
         </button>
@@ -43,22 +43,22 @@ export default function MissingSkillTodo({ items, onUpdate, onAdd, onDelete }: P
 
       <div className="space-y-2">
         {items.length === 0 && (
-          <p className="text-sm text-gray-500 dark:text-gray-400">No items yet.</p>
+          <p className="text-sm text-muted">No items yet.</p>
         )}
         {items.map((item) => (
           <div
             key={item.id}
-            className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-gray-100 dark:border-gray-800 rounded-lg px-3 py-2"
+            className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-border rounded-lg px-3 py-2 bg-surface"
           >
             <div>
-              <p className="text-sm font-medium dark:text-white">{item.name}</p>
-              <p className="text-xs text-gray-500 capitalize">{item.status.replace('_', ' ')}</p>
+              <p className="text-sm font-medium">{item.name}</p>
+              <p className="text-xs text-muted capitalize">{item.status.replace('_', ' ')}</p>
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <select
                 value={item.status}
                 onChange={(e) => onUpdate(item.id, e.target.value as Todo["status"])}
-                className="text-xs rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-2 py-1 flex-1 sm:flex-none"
+                className="text-xs sb-input flex-1 sm:flex-none"
               >
                 {statuses.map((s) => (
                   <option key={s} value={s}>
@@ -68,7 +68,7 @@ export default function MissingSkillTodo({ items, onUpdate, onAdd, onDelete }: P
               </select>
               <button
                 onClick={() => onDelete(item.id)}
-                className="text-xs text-red-500 hover:text-red-600"
+                className="text-xs text-danger hover:text-danger/80"
               >
                 Delete
               </button>

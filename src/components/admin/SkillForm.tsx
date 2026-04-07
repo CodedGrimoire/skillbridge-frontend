@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import Button from "../ui/Button";
+import FormField from "../ui/FormField";
+import Input from "../ui/Input";
 
 type SkillFormProps = {
   initialValues?: { name: string; category?: string | null };
@@ -35,43 +38,36 @@ export default function SkillForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {error && <p className="text-red-500 text-sm">{error}</p>}
-      <div className="space-y-2">
-        <label className="text-sm font-medium dark:text-white">Skill Name</label>
-        <input
+      {error && <p className="text-danger text-sm">{error}</p>}
+
+      <FormField label="Skill Name" htmlFor="skill-name" required>
+        <Input
+          id="skill-name"
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="e.g. Python"
         />
-      </div>
-      <div className="space-y-2">
-        <label className="text-sm font-medium dark:text-white">Category</label>
-        <input
+      </FormField>
+
+      <FormField label="Category" htmlFor="skill-category" hint="Optional grouping for easier browsing.">
+        <Input
+          id="skill-category"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="e.g. Programming Language"
         />
-      </div>
+      </FormField>
+
       <div className="flex items-center justify-end gap-2">
         {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800"
-          >
+          <Button type="button" variant="secondary" onClick={onCancel}>
             Cancel
-          </button>
+          </Button>
         )}
-        <button
-          type="submit"
-          disabled={loading}
-          className="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition disabled:opacity-70"
-        >
-          {loading ? "Saving..." : submitLabel}
-        </button>
+        <Button type="submit" variant="primary" loading={loading}>
+          {submitLabel}
+        </Button>
       </div>
     </form>
   );

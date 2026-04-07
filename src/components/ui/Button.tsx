@@ -1,22 +1,36 @@
 import classNames from "classnames";
 
 type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "secondary" | "ghost";
+  variant?: "primary" | "secondary" | "ghost" | "danger";
+  fullWidth?: boolean;
+  loading?: boolean;
 };
 
-// Reusable button with SaaS-friendly variants.
-export default function Button({ variant = "primary", className, children, ...props }: ButtonProps) {
-  const base =
-    "inline-flex items-center justify-center rounded-md font-medium transition duration-200 ease-in-out focus:outline-none focus:ring-0";
+// Reusable button with consistent theming + focus states.
+export default function Button({
+  variant = "primary",
+  className,
+  children,
+  fullWidth,
+  loading,
+  disabled,
+  ...props
+}: ButtonProps) {
+  const base = "sb-btn";
   const variants: Record<string, string> = {
-    primary: "bg-indigo-500 text-white hover:bg-indigo-400 px-4 py-2",
-    secondary: "border border-neutral-700 text-neutral-200 hover:bg-neutral-800 px-4 py-2",
-    ghost: "text-neutral-200 hover:text-white px-3 py-2",
+    primary: "sb-btn-primary",
+    secondary: "sb-btn-secondary",
+    ghost: "sb-btn-ghost",
+    danger: "sb-btn bg-danger/90 text-white hover:bg-danger",
   };
 
   return (
-    <button className={classNames(base, variants[variant], className)} {...props}>
-      {children}
+    <button
+      className={classNames(base, variants[variant], fullWidth && "w-full", className)}
+      disabled={disabled || loading}
+      {...props}
+    >
+      {loading ? "Loading..." : children}
     </button>
   );
 }

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useAuth } from "../hooks/useAuth";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { FaRobot } from "react-icons/fa6";
+import ThemeToggle from "./ui/ThemeToggle";
 import classNames from "classnames";
 
 export default function Navbar() {
@@ -38,7 +39,7 @@ export default function Navbar() {
         ];
 
   return (
-    <nav className="sticky top-0 z-50 bg-black border-b border-neutral-800 backdrop-blur-sm">
+    <nav className="sticky top-0 z-50 bg-bg/80 backdrop-blur border-b border-border">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="flex items-center justify-between gap-3 py-3">
           <Link href="/" className="flex items-center gap-2 text-xl font-semibold text-white">
@@ -50,7 +51,7 @@ export default function Navbar() {
 
           <div className="flex items-center gap-3">
             <button
-              className="md:hidden text-white"
+              className="md:hidden text-text"
               onClick={() => setOpen((o) => !o)}
               aria-label="Toggle menu"
               aria-expanded={open}
@@ -64,8 +65,8 @@ export default function Navbar() {
                   key={item.href}
                   href={item.href}
                   className={classNames(
-                    "text-neutral-400 hover:text-white transition duration-200 pb-1 border-b-2 border-transparent",
-                    pathname === item.href && "text-white border-white"
+                    "text-muted hover:text-text transition duration-200 pb-1 border-b-2 border-transparent",
+                    pathname === item.href && "text-text border-primary"
                   )}
                 >
                   {item.label}
@@ -77,27 +78,27 @@ export default function Navbar() {
               {user ? (
                 <details className="relative">
                   <summary className="flex items-center gap-2 cursor-pointer list-none">
-                    <div className="h-8 w-8 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center text-sm text-white">
+                    <div className="h-8 w-8 rounded-full bg-card border border-border flex items-center justify-center text-sm text-text">
                       {user.name?.[0] || "U"}
                     </div>
                     <div className="flex flex-col leading-tight">
-                      <span className="text-sm text-white">{user.name}</span>
-                      <span className="text-xs text-neutral-500">
+                      <span className="text-sm text-text">{user.name}</span>
+                      <span className="text-xs text-muted">
                         {user.role === "ADMIN" ? "Mentor" : "Jobseeker"}
                       </span>
                     </div>
                     <ChevronDown className="h-4 w-4 text-neutral-500" />
                   </summary>
-                  <div className="absolute right-0 mt-2 w-44 bg-neutral-900 border border-neutral-800 rounded-md shadow-sm py-2 z-50">
-                    <Link href="/profile" className="block px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-800">
+                  <div className="absolute right-0 mt-2 w-44 bg-card border border-border rounded-md shadow-sm py-2 z-50">
+                    <Link href="/profile" className="block px-4 py-2 text-sm text-text hover:bg-primary/5">
                       Profile
                     </Link>
-                    <Link href="/settings" className="block px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-800">
+                    <Link href="/settings" className="block px-4 py-2 text-sm text-text hover:bg-primary/5">
                       Settings
                     </Link>
                     <button
                       onClick={logout}
-                      className="w-full text-left px-4 py-2 text-sm text-neutral-200 hover:bg-neutral-800"
+                      className="w-full text-left px-4 py-2 text-sm text-text hover:bg-primary/5"
                     >
                       Logout
                     </button>
@@ -105,19 +106,19 @@ export default function Navbar() {
                 </details>
               ) : (
                 <>
-                  <Link href="/login" className="btn-secondary text-sm">
+                  <Link href="/login" className="sb-btn-secondary text-sm">
                     Login
                   </Link>
-                  <Link href="/register" className="btn-primary text-sm">
+                  <Link href="/register" className="sb-btn-primary text-sm">
                     Register
                   </Link>
                   <details className="relative">
                     <summary className="cursor-pointer text-sm text-neutral-300">Demo logins</summary>
-                    <div className="absolute right-0 mt-2 w-48 bg-neutral-900 border border-neutral-800 rounded-lg p-2 space-y-1 z-50">
+                    <div className="absolute right-0 mt-2 w-48 bg-card border border-border rounded-lg p-2 space-y-1 z-50">
                       {demoCreds.map((d) => (
                         <button
                           key={d.email}
-                          className="w-full text-left text-xs text-white px-2 py-1 rounded hover:bg-neutral-800"
+                          className="w-full text-left text-xs text-text px-2 py-1 rounded hover:bg-primary/5"
                           onClick={() => {
                             localStorage.setItem("demo_email", d.email);
                             localStorage.setItem("demo_password", d.password);
@@ -132,6 +133,10 @@ export default function Navbar() {
                 </>
               )}
             </div>
+
+            <div className="hidden md:flex">
+              <ThemeToggle />
+            </div>
           </div>
         </div>
 
@@ -141,15 +146,15 @@ export default function Navbar() {
             open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0 pointer-events-none"
           )}
         >
-          <div className="overflow-hidden border-t border-neutral-800 py-3 space-y-4">
+          <div className="overflow-hidden border-t border-border py-3 space-y-4">
             <div className="grid gap-3">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={classNames(
-                    "text-neutral-200 px-2 py-1 rounded hover:bg-neutral-900 transition",
-                    pathname === item.href && "bg-neutral-900 text-white"
+                    "text-text px-2 py-1 rounded hover:bg-primary/5 transition",
+                    pathname === item.href && "bg-primary/10 text-text"
                   )}
                   onClick={() => setOpen(false)}
                 >
@@ -162,21 +167,21 @@ export default function Navbar() {
               {user ? (
                 <>
                   <div className="flex items-center gap-3 px-2">
-                    <div className="h-9 w-9 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center text-sm text-white">
+                    <div className="h-9 w-9 rounded-full bg-card border border-border flex items-center justify-center text-sm text-text">
                       {user.name?.[0] || "U"}
                     </div>
                     <div className="flex flex-col leading-tight">
-                      <span className="text-sm text-white">{user.name}</span>
-                      <span className="text-xs text-neutral-500">
+                      <span className="text-sm text-text">{user.name}</span>
+                      <span className="text-xs text-muted">
                         {user.role === "ADMIN" ? "Mentor" : "Jobseeker"}
                       </span>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2 px-2">
-                    <Link href="/profile" className="btn-secondary justify-center text-sm w-full" onClick={() => setOpen(false)}>
+                    <Link href="/profile" className="sb-btn-secondary justify-center text-sm w-full" onClick={() => setOpen(false)}>
                       Profile
                     </Link>
-                    <Link href="/settings" className="btn-secondary justify-center text-sm w-full" onClick={() => setOpen(false)}>
+                    <Link href="/settings" className="sb-btn-secondary justify-center text-sm w-full" onClick={() => setOpen(false)}>
                       Settings
                     </Link>
                     <button
@@ -184,7 +189,7 @@ export default function Navbar() {
                         logout();
                         setOpen(false);
                       }}
-                      className="col-span-2 btn-primary justify-center text-sm w-full"
+                      className="col-span-2 sb-btn-primary justify-center text-sm w-full"
                     >
                       Logout
                     </button>
@@ -193,20 +198,20 @@ export default function Navbar() {
               ) : (
                 <>
                   <div className="grid grid-cols-2 gap-2 px-2">
-                    <Link href="/login" className="btn-secondary justify-center text-sm w-full" onClick={() => setOpen(false)}>
+                    <Link href="/login" className="sb-btn-secondary justify-center text-sm w-full" onClick={() => setOpen(false)}>
                       Login
                     </Link>
-                    <Link href="/register" className="btn-primary justify-center text-sm w-full" onClick={() => setOpen(false)}>
+                    <Link href="/register" className="sb-btn-primary justify-center text-sm w-full" onClick={() => setOpen(false)}>
                       Register
                     </Link>
                   </div>
-                  <div className="border border-neutral-800 rounded-lg p-3 space-y-2">
-                    <p className="text-xs text-neutral-400">Demo logins</p>
+                  <div className="border border-border rounded-lg p-3 space-y-2">
+                    <p className="text-xs text-muted">Demo logins</p>
                     <div className="grid gap-2">
                       {demoCreds.map((d) => (
                         <button
                           key={d.email}
-                          className="w-full text-left text-xs text-white px-2 py-1 rounded bg-neutral-900 hover:bg-neutral-800"
+                          className="w-full text-left text-xs text-text px-2 py-1 rounded bg-card hover:bg-primary/5"
                           onClick={() => {
                             localStorage.setItem("demo_email", d.email);
                             localStorage.setItem("demo_password", d.password);
@@ -220,6 +225,10 @@ export default function Navbar() {
                   </div>
                 </>
               )}
+
+              <div className="px-2">
+                <ThemeToggle className="w-full justify-center" />
+              </div>
             </div>
           </div>
         </div>

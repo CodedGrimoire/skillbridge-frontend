@@ -3,31 +3,131 @@
 @tailwind utilities;
 
 :root {
+  color-scheme: light;
+  --sb-bg: #f8fafc;
+  --sb-surface: #ffffff;
+  --sb-card: #ffffff;
+  --sb-border: #e2e8f0;
+  --sb-text: #0f172a;
+  --sb-muted: #475569;
+  --sb-primary: #6366f1;
+  --sb-primary-foreground: #ffffff;
+  --sb-secondary: #22d3ee;
+  --sb-secondary-foreground: #0b1224;
+  --sb-success: #10b981;
+  --sb-danger: #ef4444;
+  --sb-warning: #f59e0b;
+}
+
+.dark {
   color-scheme: dark;
+  --sb-bg: #0b1224;
+  --sb-surface: #0f172a;
+  --sb-card: #0f172a;
+  --sb-border: #1f2937;
+  --sb-text: #e2e8f0;
+  --sb-muted: #94a3b8;
+  --sb-primary: #6366f1;
+  --sb-primary-foreground: #e0e7ff;
+  --sb-secondary: #22d3ee;
+  --sb-secondary-foreground: #0b1224;
+  --sb-success: #34d399;
+  --sb-danger: #f87171;
+  --sb-warning: #fbbf24;
+}
+
+* {
+  @apply antialiased;
 }
 
 body {
-  @apply bg-black text-white antialiased;
+  @apply bg-bg text-text min-h-screen;
 }
 
 a {
-  @apply text-white hover:underline transition-colors;
+  @apply text-primary hover:text-primary/80 transition-colors;
 }
 
-a {
-  @apply text-white hover:underline transition-colors;
+.sb-page {
+  @apply mx-auto w-full max-w-6xl px-4 sm:px-6 md:px-10;
 }
 
-.card {
-  @apply bg-neutral-900 border border-neutral-800 rounded-lg shadow-sm;
+.sb-section {
+  @apply space-y-4 md:space-y-6;
 }
 
-.btn-primary {
-  @apply inline-flex items-center justify-center px-4 py-2 rounded-md bg-indigo-500 text-white font-medium hover:bg-indigo-400 transition duration-200 ease-in-out;
+.sb-card {
+  @apply rounded-lg border border-border bg-card shadow-soft transition duration-200;
 }
 
-.btn-secondary {
-  @apply inline-flex items-center justify-center px-4 py-2 rounded-md border border-neutral-700 text-neutral-200 font-medium hover:bg-neutral-800 transition duration-200 ease-in-out;
+.sb-card:hover {
+  @apply shadow-ring;
+}
+
+.sb-heading {
+  @apply text-2xl font-semibold text-text;
+}
+
+.sb-subtle {
+  @apply text-sm text-muted;
+}
+
+.sb-btn {
+  @apply inline-flex items-center justify-center rounded-md font-medium transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:opacity-60 disabled:cursor-not-allowed;
+}
+
+.sb-btn-primary {
+  @apply sb-btn bg-primary text-primary-foreground px-4 py-2 hover:bg-primary/90 shadow-sm;
+}
+
+.sb-btn-secondary {
+  @apply sb-btn border border-border bg-surface text-text px-4 py-2 hover:bg-primary/5;
+}
+
+.sb-btn-ghost {
+  @apply sb-btn text-muted px-3 py-2 hover:bg-primary/5;
+}
+
+.sb-input {
+  @apply w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-muted/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:opacity-60;
+}
+
+.sb-label {
+  @apply text-sm font-medium text-text;
+}
+
+.sb-badge {
+  @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold;
+}
+
+.sb-badge-neutral { @apply bg-border text-muted; }
+.sb-badge-primary { @apply bg-primary/15 text-primary; }
+.sb-badge-success { @apply bg-success/15 text-success; }
+.sb-badge-danger { @apply bg-danger/15 text-danger; }
+.sb-badge-warning { @apply bg-warning/15 text-warning; }
+
+.sb-table {
+  @apply w-full overflow-hidden rounded-lg border border-border bg-card;
+}
+
+.sb-table table { @apply w-full text-sm; }
+.sb-table th { @apply text-left text-muted font-semibold px-4 py-3 border-b border-border bg-surface; }
+.sb-table td { @apply px-4 py-3 border-b border-border text-text; }
+
+.sb-empty {
+  @apply flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-surface px-6 py-8 text-center text-muted;
+}
+
+.sb-skeleton {
+  @apply relative overflow-hidden rounded-md bg-border/60;
+  background-size: 200% 100%;
+  background-image: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.12), rgba(255,255,255,0));
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 @keyframes float {

@@ -5,7 +5,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "../../hooks/useAuth";
 import { useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, CheckCircle2, AlertTriangle } from "lucide-react";
+import Button from "../../components/ui/Button";
+import Card from "../../components/ui/Card";
+import FormField from "../../components/ui/FormField";
+import Input from "../../components/ui/Input";
 
 const schema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -16,6 +20,7 @@ const schema = z.object({
 export default function RegisterPage() {
   const { register: signup } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const {
     register,
@@ -26,60 +31,67 @@ export default function RegisterPage() {
   const onSubmit = async (data: any) => {
     try {
       setError(null);
+      setSuccess(null);
       await signup(data.name, data.email, data.password);
+      setSuccess("Account created. Redirecting...");
     } catch (err: any) {
       setError(err?.response?.data?.message || "Registration failed");
     }
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 py-12">
-      <div className="card p-6 space-y-4">
-        <h1 className="text-2xl font-semibold">Create Account</h1>
-        <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
-          <div>
-            <label className="block text-sm mb-1">Name</label>
-            <input
-              className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2"
-              type="text"
-              {...register("name")}
-            />
-            {errors.name && <p className="text-red-400 text-sm">{errors.name.message as string}</p>}
-          </div>
-          <div>
-            <label className="block text-sm mb-1">Email</label>
-            <input
-              className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2"
-              type="email"
-              {...register("email")}
-            />
-            {errors.email && <p className="text-red-400 text-sm">{errors.email.message as string}</p>}
-          </div>
-          <div>
-            <label className="block text-sm mb-1">Password</label>
+    <div className="sb-page py-12">
+      <Card className="p-6 space-y-4 max-w-md mx-auto">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold">Create Account</h1>
+          <p className="text-sm text-muted">Join SkillBridge AI to get tailored mentor guidance.</p>
+        </div>
+
+        <form className="space-y-4" onSubmit={handleSubmit(onSubmit)} noValidate>
+          <FormField label="Full Name" htmlFor="name" error={errors.name?.message as string | undefined}>
+            <Input id="name" type="text" autoComplete="name" {...register("name")} />
+          </FormField>
+
+          <FormField label="Email" htmlFor="email" error={errors.email?.message as string | undefined}>
+            <Input id="email" type="email" autoComplete="email" {...register("email")} />
+          </FormField>
+
+          <FormField label="Password" htmlFor="password" error={errors.password?.message as string | undefined}>
             <div className="relative">
-              <input
-                className="w-full rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 pr-10"
+              <Input
+                id="password"
                 type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
+                className="pr-10"
                 {...register("password")}
               />
               <button
                 type="button"
                 aria-label={showPassword ? "Hide password" : "Show password"}
-                className="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-slate-200"
+                className="absolute inset-y-0 right-3 flex items-center text-muted hover:text-text"
                 onClick={() => setShowPassword((p) => !p)}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            {errors.password && <p className="text-red-400 text-sm">{errors.password.message as string}</p>}
-          </div>
-          {error && <p className="text-red-400 text-sm">{error}</p>}
-          <button className="btn-primary w-full" disabled={isSubmitting} type="submit">
+          </FormField>
+
+          {error && (
+            <p className="flex items-center gap-2 text-sm text-danger">
+              <AlertTriangle size={16} /> {error}
+            </p>
+          )}
+          {success && (
+            <p className="flex items-center gap-2 text-sm text-success">
+              <CheckCircle2 size={16} /> {success}
+            </p>
+          )}
+
+          <Button className="w-full" loading={isSubmitting} type="submit">
             {isSubmitting ? "Creating..." : "Register"}
-          </button>
+          </Button>
         </form>
-      </div>
+      </Card>
     </div>
   );
 }

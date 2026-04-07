@@ -9,5 +9,5 @@ export default function SectionContainer({
   children: React.ReactNode;
   className?: string;
 }) {
-  return <section className={classNames("mx-auto max-w-6xl px-4 sm:px-8 md:px-10", className)}>{children}</section>;
+  return <section className={classNames("sb-page", className)}>{children}</section>;
 }

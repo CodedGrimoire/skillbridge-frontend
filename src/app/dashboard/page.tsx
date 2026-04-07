@@ -10,6 +10,10 @@ import { useRequireAuth } from "../../hooks/useRequireAuth";
 import { useAuth } from "../../hooks/useAuth";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import Card from "../../components/ui/Card";
+import Button from "../../components/ui/Button";
+import Input from "../../components/ui/Input";
+import EmptyState from "../../components/ui/EmptyState";
+import Skeleton from "../../components/ui/Skeleton";
 
 type Profile = { id: string; name: string; email: string; role: string; createdAt: string };
 type Capability = {

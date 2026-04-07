@@ -1,4 +1,5 @@
 import Card from "./Card";
+import Badge from "./Badge";
 
 type StatCardProps = {
   label: string;
@@ -10,9 +11,9 @@ type StatCardProps = {
 export default function StatCard({ label, value, hint }: StatCardProps) {
   return (
     <Card className="p-4 space-y-2">
-      <p className="text-xs uppercase tracking-wide text-slate-400">{label}</p>
-      <p className="text-2xl font-semibold">{value}</p>
-      {hint && <p className="text-xs text-slate-400">{hint}</p>}
+      <p className="text-xs uppercase tracking-wide text-muted">{label}</p>
+      <p className="text-2xl font-semibold text-text">{value}</p>
+      {hint && <p className="text-xs text-muted">{hint}</p>}
     </Card>
   );
 }

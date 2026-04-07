@@ -4,19 +4,10 @@ import classNames from "classnames";
 type CardProps = {
   children: React.ReactNode;
   className?: string;
+  as?: keyof JSX.IntrinsicElements;
 };
 
 // Generic card wrapper to keep a consistent SaaS-like style.
-export default function Card({ children, className }: CardProps) {
-  return (
-    <div
-      className={classNames(
-        "rounded-lg border border-neutral-800 bg-neutral-900 shadow-sm",
-        "transition duration-200 ease-in-out hover:bg-neutral-800",
-        className
-      )}
-    >
-      {children}
-    </div>
-  );
+export default function Card({ children, className, as: Component = "div" }: CardProps) {
+  return <Component className={classNames("sb-card", className)}>{children}</Component>;
 }
