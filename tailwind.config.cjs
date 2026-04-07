@@ -7,23 +7,23 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        bg: "var(--sb-bg)",
-        surface: "var(--sb-surface)",
-        card: "var(--sb-card)",
-        border: "var(--sb-border)",
-        text: "var(--sb-text)",
-        muted: "var(--sb-muted)",
+        bg: "hsl(var(--sb-bg))",
+        surface: "hsl(var(--sb-surface))",
+        card: "hsl(var(--sb-card))",
+        border: "hsl(var(--sb-border))",
+        text: "hsl(var(--sb-text))",
+        muted: "hsl(var(--sb-muted))",
         primary: {
-          DEFAULT: "var(--sb-primary)",
-          foreground: "var(--sb-primary-foreground)",
+          DEFAULT: "hsl(var(--sb-primary))",
+          foreground: "hsl(var(--sb-primary-foreground))",
         },
         secondary: {
-          DEFAULT: "var(--sb-secondary)",
-          foreground: "var(--sb-secondary-foreground)",
+          DEFAULT: "hsl(var(--sb-secondary))",
+          foreground: "hsl(var(--sb-secondary-foreground))",
         },
-        success: "var(--sb-success)",
-        danger: "var(--sb-danger)",
-        warning: "var(--sb-warning)",
+        success: "hsl(var(--sb-success))",
+        danger: "hsl(var(--sb-danger))",
+        warning: "hsl(var(--sb-warning))",
       },
       borderRadius: {
         lg: "14px",
