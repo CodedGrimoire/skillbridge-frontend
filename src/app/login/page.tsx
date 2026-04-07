@@ -5,11 +5,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "../../hooks/useAuth";
 import { useEffect, useState } from "react";
-import { Eye, EyeOff, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Eye, EyeOff, CheckCircle2, AlertTriangle, LogIn } from "lucide-react";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 import FormField from "../../components/ui/FormField";
 import Input from "../../components/ui/Input";
+import Badge from "../../components/ui/Badge";
 
 const schema = z.object({
   email: z.string().email(),
@@ -39,6 +40,21 @@ export default function LoginPage() {
     }
   }, [setValue]);
 
+  const demoAccounts = [
+    { label: "Demo Admin", email: "mentor1@example.com", password: "Passw0rd!" },
+    { label: "Demo User", email: "user1@example.com", password: "Passw0rd!" },
+  ];
+
+  const fillDemo = (d: { email: string; password: string }) => {
+    localStorage.setItem("demo_email", d.email);
+    localStorage.setItem("demo_password", d.password);
+    setDemo(d);
+    setValue("email", d.email);
+    setValue("password", d.password);
+  };
+
+  const socialBase = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
+
   const onSubmit = async (data: any) => {
     try {
       setError(null);
@@ -50,9 +66,13 @@ export default function LoginPage() {
     }
   };
 
+  const socialLogin = (provider: "google" | "facebook") => {
+    window.location.href = `${socialBase}/auth/${provider}`;
+  };
+
   return (
     <div className="sb-page py-12">
-      <Card className="p-6 space-y-4 max-w-md mx-auto">
+      <Card className="p-6 space-y-5 max-w-md mx-auto">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold">Login</h1>
           <p className="text-sm text-muted">Access your SkillBridge AI dashboard.</p>
@@ -99,28 +119,38 @@ export default function LoginPage() {
           </Button>
 
           <div className="space-y-2">
-            <p className="text-xs text-muted">Demo accounts:</p>
-            {[
-              { label: "Demo Mentor", email: "mentor1@example.com", password: "Passw0rd!" },
-              { label: "Demo User 1", email: "user1@example.com", password: "Passw0rd!" },
-              { label: "Demo User 2", email: "user2@example.com", password: "Passw0rd!" },
-            ].map((d) => (
-              <button
-                key={d.email}
-                type="button"
-                className="w-full text-left text-xs text-text px-2 py-1 rounded bg-card hover:bg-primary/5"
-                onClick={() => {
-                  localStorage.setItem("demo_email", d.email);
-                  localStorage.setItem("demo_password", d.password);
-                  setDemo({ email: d.email, password: d.password });
-                  setValue("email", d.email);
-                  setValue("password", d.password);
-                }}
-              >
-                {d.label} — {d.email} / {d.password}
-              </button>
-            ))}
+            <p className="text-xs text-muted">Demo logins</p>
+            <div className="grid gap-2">
+              {demoAccounts.map((d) => (
+                <button
+                  key={d.email}
+                  type="button"
+                  className="w-full text-left text-xs text-text px-2 py-2 rounded bg-card hover:bg-primary/5"
+                  onClick={() => fillDemo(d)}
+                >
+                  {d.label} — {d.email}
+                </button>
+              ))}
+            </div>
+            {demo && (
+              <Button variant="secondary" className="w-full" onClick={() => handleSubmit(onSubmit)()}>
+                <LogIn className="h-4 w-4" /> Use demo credentials
+              </Button>
+            )}
           </div>
+
+          <div className="space-y-2">
+            <p className="text-xs text-muted">Continue with</p>
+            <div className="grid grid-cols-2 gap-2">
+              <Button type="button" variant="secondary" onClick={() => socialLogin("google")}>Google</Button>
+              <Button type="button" variant="secondary" onClick={() => socialLogin("facebook")}>Facebook</Button>
+            </div>
+            <p className="text-xs text-muted">We’ll redirect to the provider and back here.</p>
+          </div>
+
+          <p className="text-xs text-muted">
+            New here? <a href="/register" className="text-primary">Create an account</a>
+          </p>
         </form>
       </Card>
     </div>

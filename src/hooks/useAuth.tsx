@@ -16,7 +16,7 @@ type AuthContextValue = {
   loading: boolean;
   sessionKey: number;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<void>;
+  register: (name: string, email: string, password: string, role?: string) => Promise<void>;
   logout: () => void;
   refresh: () => Promise<void>;
 };
@@ -58,24 +58,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [resetUserState]
   );
 
+  const redirectByRole = useCallback(
+    (role?: string) => {
+      if (role === "ADMIN" || role === "MENTOR") {
+        router.push("/admin/dashboard");
+      } else {
+        router.push("/dashboard");
+      }
+    },
+    [router]
+  );
+
   const login = useCallback(
     async (email: string, password: string) => {
       const res = await api.post("/auth/login", { email, password });
       localStorage.setItem("token", res.data.token);
       handleUserChange(res.data.user);
-      router.push("/dashboard");
+      redirectByRole(res.data.user?.role);
     },
-    [handleUserChange, router]
+    [handleUserChange, redirectByRole]
   );
 
   const register = useCallback(
-    async (name: string, email: string, password: string) => {
-      const res = await api.post("/auth/register", { name, email, password });
+    async (name: string, email: string, password: string, role: string = "USER") => {
+      const res = await api.post("/auth/register", { name, email, password, role });
       localStorage.setItem("token", res.data.token);
       handleUserChange(res.data.user);
-      router.push("/dashboard");
+      redirectByRole(res.data.user?.role);
     },
-    [handleUserChange, router]
+    [handleUserChange, redirectByRole]
   );
 
   const logout = useCallback(() => {
