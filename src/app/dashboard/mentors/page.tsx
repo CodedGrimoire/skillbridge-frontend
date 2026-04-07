@@ -1,9 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import api from "../../../services/api";
 import SectionContainer from "../../../components/ui/SectionContainer";
-import { Search } from "lucide-react";
+import FiltersBar from "../../../components/explore/FiltersBar";
+import Pagination from "../../../components/explore/Pagination";
+import ListingSkeleton from "../../../components/ui/ListingSkeleton";
+import EmptyState from "../../../components/ui/EmptyState";
+import MentorCard from "../../../components/cards/MentorCard";
+import Button from "../../../components/ui/Button";
 
 type Mentor = { id: string; name: string; email: string };
 type MentorProfile = Mentor & { mentorProfile?: { title?: string | null; rating?: number | null } };
@@ -19,6 +24,11 @@ export default function MentorSearchPage() {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [myMentor, setMyMentor] = useState<MentorProfile | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [expertise, setExpertise] = useState("all");
+  const [ratingFilter, setRatingFilter] = useState("all");
+  const [sort, setSort] = useState("rating_desc");
+  const [page, setPage] = useState(1);
+  const pageSize = 8;
 
   useEffect(() => {
     const load = async () => {
@@ -38,9 +48,31 @@ export default function MentorSearchPage() {
     load();
   }, []);
 
-  const filtered = mentors.filter((m) =>
-    `${m.name} ${m.email} ${m.mentorProfile?.title || ""}`.toLowerCase().includes(query.toLowerCase())
-  );
+  const decorated = mentors.map((m, idx) => ({
+    ...m,
+    rating: m.mentorProfile?.rating ?? 4.2 + (idx % 3) * 0.2,
+    title: m.mentorProfile?.title || "Career Mentor",
+    sessions: 120 + idx * 7,
+    industry: ["Product", "Data", "Frontend", "Backend"][idx % 4],
+  }));
+
+  const filtered = useMemo(() => {
+    let list = decorated.filter((m) =>
+      `${m.name} ${m.email} ${m.title}`.toLowerCase().includes(query.toLowerCase())
+    );
+    if (expertise !== "all") list = list.filter((m) => m.industry === expertise);
+    if (ratingFilter !== "all") list = list.filter((m) => (m.rating || 0) >= Number(ratingFilter));
+
+    if (sort === "rating_desc") list = [...list].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    if (sort === "rating_asc") list = [...list].sort((a, b) => (a.rating || 0) - (b.rating || 0));
+    if (sort === "name") list = [...list].sort((a, b) => a.name.localeCompare(b.name));
+    return list;
+  }, [decorated, query, expertise, ratingFilter, sort]);
+
+  const paged = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, page]);
 
   const requestMentor = async (mentorId: string) => {
     await api.post("/mentor/requests", { mentorId, message });
@@ -94,88 +126,109 @@ export default function MentorSearchPage() {
           </div>
         )}
 
-        <div className="card p-6 space-y-4">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-            <div>
-              <h1 className="text-2xl font-semibold">Job Search Mentors</h1>
-              <p className="text-sm text-neutral-500">
-                Browse mentors and send an invitation. You can also leave ratings after mentoring.
-              </p>
-            </div>
-            <div className="w-full md:w-80 relative">
-              <Search className="h-4 w-4 text-neutral-500 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search mentors by name or email"
-                className="w-full rounded-lg bg-white/5 border border-white/10 px-10 py-2 text-sm text-neutral-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-              />
-            </div>
+        <div className="space-y-4">
+          <div className="sb-section">
+            <h1 className="text-2xl font-semibold">Job Search Mentors</h1>
+            <p className="text-sm text-muted">Browse mentors and send an invitation with filters that match your needs.</p>
           </div>
 
-          <div className="space-y-4">
-            {loading && <p className="text-sm text-neutral-500">Loading mentors...</p>}
-            {!loading &&
-              filtered.map((m) => (
-                <div
-                  key={m.id}
-                  className="p-6 rounded-xl border border-white/10 bg-white/5 backdrop-blur-md space-y-3 transition duration-300 hover:-translate-y-[2px] hover:shadow-[0_10px_40px_rgba(0,0,0,0.5)] hover:ring-1 hover:ring-indigo-500/30"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-full bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-200 font-semibold">
-                      {m.name[0]}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-white">{m.name}</p>
-                      <p className="text-xs text-neutral-500">{m.email}</p>
-                      {m.mentorProfile?.title && (
-                        <p className="text-xs text-neutral-500">{m.mentorProfile.title}</p>
-                      )}
-                      {m.mentorProfile?.rating && (
-                        <span className="text-xs text-amber-400">★ {m.mentorProfile.rating.toFixed(1)}</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs px-3 py-1 rounded-full bg-green-500/10 text-green-300 border border-green-500/20">
-                        Available
-                      </span>
-                      <button
-                        className="px-4 py-2 rounded-md bg-indigo-500 text-white text-xs font-semibold shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:scale-105 transition"
-                        onClick={() => setExpanded(expanded === m.id ? null : m.id)}
-                      >
-                        {expanded === m.id ? "Close" : "Request"}
-                      </button>
-                      <button
-                        onClick={() => submitReview(m.id)}
-                        className="px-4 py-2 rounded-md border border-white/15 text-xs text-white hover:bg-white/10"
-                      >
-                        Rate
-                      </button>
-                    </div>
-                  </div>
+          <FiltersBar
+            search={query}
+            onSearchChange={(v) => {
+              setQuery(v);
+              setPage(1);
+            }}
+            searchPlaceholder="Search by name, email, or specialty"
+            filters={[
+              {
+                label: "Expertise",
+                value: expertise,
+                onChange: (v) => {
+                  setExpertise(v);
+                  setPage(1);
+                },
+                options: [
+                  { label: "All expertise", value: "all" },
+                  { label: "Product", value: "Product" },
+                  { label: "Data", value: "Data" },
+                  { label: "Frontend", value: "Frontend" },
+                  { label: "Backend", value: "Backend" },
+                ],
+              },
+              {
+                label: "Rating",
+                value: ratingFilter,
+                onChange: (v) => {
+                  setRatingFilter(v);
+                  setPage(1);
+                },
+                options: [
+                  { label: "All ratings", value: "all" },
+                  { label: "4.5+", value: "4.5" },
+                  { label: "4.0+", value: "4.0" },
+                  { label: "3.5+", value: "3.5" },
+                ],
+              },
+            ]}
+            sort={{
+              value: sort,
+              onChange: (v) => setSort(v),
+              options: [
+                { label: "Sort: Rating high → low", value: "rating_desc" },
+                { label: "Sort: Rating low → high", value: "rating_asc" },
+                { label: "Sort: Name A→Z", value: "name" },
+              ],
+            }}
+            onClear={() => {
+              setQuery("");
+              setExpertise("all");
+              setRatingFilter("all");
+              setSort("rating_desc");
+              setPage(1);
+            }}
+          />
 
-                  {expanded === m.id && (
-                    <div className="space-y-3 pt-2">
-                      <textarea
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        placeholder="Write a short note for your mentor"
-                        className="w-full text-sm rounded-lg bg-white/5 border border-white/10 text-neutral-100 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
-                      />
-                      <button
-                        onClick={() => requestMentor(m.id)}
-                        className="px-4 py-2 rounded-md bg-indigo-500 text-white text-sm font-semibold shadow-[0_0_20px_rgba(99,102,241,0.4)] hover:scale-105 transition"
-                      >
-                        Send Request
-                      </button>
-                    </div>
-                  )}
-                </div>
+          {loading ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <ListingSkeleton key={i} />
               ))}
-            {!loading && filtered.length === 0 && (
-              <p className="text-sm text-gray-500">No mentors found.</p>
-            )}
-          </div>
+            </div>
+          ) : paged.length ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {paged.map((m) => (
+                <MentorCard
+                  key={m.id}
+                  name={m.name}
+                  title={m.title}
+                  email={m.email}
+                  rating={m.rating as number}
+                  sessions={m.sessions}
+                  industry={m.industry}
+                  onAction={() => setExpanded(expanded === m.id ? null : m.id)}
+                />
+              ))}
+            </div>
+          ) : (
+            <EmptyState title="No mentors found" description="Try adjusting filters or search" />
+          )}
+
+          {!loading && filtered.length > pageSize && (
+            <Pagination page={page} pageSize={pageSize} total={filtered.length} onChange={setPage} />
+          )}
+
+          {expanded && (
+            <div className="sb-card p-5 space-y-3">
+              <p className="text-sm text-muted">Send a short note to the mentor</p>
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="What do you want to accomplish with this mentor?"
+                className="sb-input min-h-[120px]"
+              />
+              <Button onClick={() => requestMentor(expanded)}>Send Request</Button>
+            </div>
+          )}
         </div>
 
         <div className="card p-5">

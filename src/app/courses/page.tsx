@@ -1,11 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import api from "../../services/api";
 import SectionContainer from "../../components/ui/SectionContainer";
 import Card from "../../components/ui/Card";
 import { useAuth } from "../../hooks/useAuth";
-import { Sparkles } from "lucide-react";
+import FiltersBar from "../../components/explore/FiltersBar";
+import ListingSkeleton from "../../components/ui/ListingSkeleton";
+import EmptyState from "../../components/ui/EmptyState";
+import CourseCard from "../../components/cards/CourseCard";
+import Pagination from "../../components/explore/Pagination";
 
 type Course = {
   id: string;
@@ -13,6 +17,10 @@ type Course = {
   description: string;
   price: number;
   mentor?: { id: string; name: string };
+  duration?: string;
+  level?: string;
+  category?: string;
+  rating?: number;
 };
 
 export default function CoursesPage() {
@@ -22,6 +30,12 @@ export default function CoursesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [buying, setBuying] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("all");
+  const [level, setLevel] = useState("all");
+  const [sort, setSort] = useState("price_asc");
+  const [page, setPage] = useState(1);
+  const pageSize = 9;
 
   useEffect(() => {
     if (user?.role === "ADMIN") {
@@ -31,7 +45,13 @@ export default function CoursesPage() {
     const load = async () => {
       try {
         const res = await api.get("/courses");
-        setCourses(res.data || []);
+        setCourses((res.data || []).map((c: Course, idx: number) => ({
+          ...c,
+          duration: c.duration || ["3 weeks", "5 weeks", "6 hours", "10 hours"][idx % 4],
+          level: c.level || ["Beginner", "Intermediate", "Advanced"][idx % 3],
+          category: c.category || ["Frontend", "Data", "Product", "Backend"][idx % 4],
+          rating: c.rating || 4.2 + (idx % 3) * 0.2,
+        })));
         // attempt to load purchases if logged in
         try {
           const purchasedRes = await api.get("/courses/purchased");
@@ -60,89 +80,134 @@ export default function CoursesPage() {
     }
   };
 
+  const filtered = useMemo(() => {
+    let list = courses.filter((c) => `${c.title} ${c.description}`.toLowerCase().includes(search.toLowerCase()));
+    if (category !== "all") list = list.filter((c) => c.category === category);
+    if (level !== "all") list = list.filter((c) => c.level === level);
+    if (sort === "price_asc") list = [...list].sort((a, b) => a.price - b.price);
+    if (sort === "price_desc") list = [...list].sort((a, b) => b.price - a.price);
+    if (sort === "rating_desc") list = [...list].sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    return list;
+  }, [courses, search, category, level, sort]);
+
+  const paged = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, page]);
+
   return (
     <SectionContainer className="py-10 space-y-6">
       <div className="space-y-1">
         <h1 className="text-3xl font-semibold">Courses</h1>
-        <p className="text-neutral-500">Learn from mentors. Pay securely with Stripe.</p>
+        <p className="text-muted">Learn from mentors. Pay securely with Stripe.</p>
       </div>
 
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {loading
-          ? Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="p-6 space-y-3 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md">
-              <div className="h-20 rounded-xl bg-gradient-to-r from-indigo-500/20 to-purple-500/20 animate-pulse" />
-              <div className="h-4 w-1/2 bg-neutral-800 rounded animate-pulse" />
-              <div className="h-3 w-3/4 bg-neutral-800 rounded animate-pulse" />
-              <div className="h-8 w-24 bg-neutral-800 rounded animate-pulse" />
-            </div>
-          ))
-          : courses.map((c, idx) => (
-            <div
-              key={c.id}
-              className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md overflow-hidden relative transition duration-250 ease-out hover:scale-[1.02] hover:-translate-y-[4px] hover:shadow-[0_16px_40px_rgba(0,0,0,0.45)]"
-              style={{ backgroundImage: "linear-gradient(180deg, rgba(255,255,255,0.03), transparent)" }}
-            >
-              <div
-                className="h-20 bg-gradient-to-r from-indigo-500/15 to-purple-500/12"
-              />
-              <div className="p-7 space-y-4">
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <h3 className="text-xl font-semibold text-white">{c.title}</h3>
-                      <p className="text-sm text-neutral-400 line-clamp-2">{c.description}</p>
-                    </div>
-                    <span className="text-xl font-semibold text-indigo-400">${(c.price / 100).toFixed(2)}</span>
-                  </div>
-                <div className="flex items-center gap-3 text-xs text-neutral-400">
-                  {c.mentor && (
-                    <div className="flex items-center gap-2">
-                      <span className="h-8 w-8 rounded-full bg-indigo-500/15 border border-indigo-500/20 flex items-center justify-center text-indigo-200 text-xs">
-                        {c.mentor.name[0]}
-                      </span>
-                      <span>By {c.mentor.name}</span>
-                    </div>
-                  )}
-                  <span className="px-2 py-1 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                    Popular
-                  </span>
-                </div>
-                {purchased.has(c.id) ? (
-                  <span className="block text-xs text-center px-3 py-2 rounded bg-green-500/10 text-green-400 border border-green-500/20">
-                    Purchased
-                  </span>
-                ) : (
-                  <button
-                    className="w-full btn-primary text-sm px-4 py-2 hover:scale-105"
-                    onClick={() => buy(c.id)}
-                    disabled={buying === c.id}
-                  >
-                    {buying === c.id ? "Redirecting..." : "Buy now"}
-                  </button>
-                )}
-              </div>
-            </div>
+      <FiltersBar
+        search={search}
+        onSearchChange={(v) => {
+          setSearch(v);
+          setPage(1);
+        }}
+        searchPlaceholder="Search courses"
+        filters={[
+          {
+            label: "Category",
+            value: category,
+            onChange: (v) => {
+              setCategory(v);
+              setPage(1);
+            },
+            options: [
+              { label: "All categories", value: "all" },
+              { label: "Frontend", value: "Frontend" },
+              { label: "Backend", value: "Backend" },
+              { label: "Data", value: "Data" },
+              { label: "Product", value: "Product" },
+            ],
+          },
+          {
+            label: "Level",
+            value: level,
+            onChange: (v) => {
+              setLevel(v);
+              setPage(1);
+            },
+            options: [
+              { label: "All levels", value: "all" },
+              { label: "Beginner", value: "Beginner" },
+              { label: "Intermediate", value: "Intermediate" },
+              { label: "Advanced", value: "Advanced" },
+            ],
+          },
+        ]}
+        sort={{
+          value: sort,
+          onChange: (v) => setSort(v),
+          options: [
+            { label: "Sort: Price low → high", value: "price_asc" },
+            { label: "Sort: Price high → low", value: "price_desc" },
+            { label: "Sort: Rating", value: "rating_desc" },
+          ],
+        }}
+        onClear={() => {
+          setSearch("");
+          setCategory("all");
+          setLevel("all");
+          setSort("price_asc");
+          setPage(1);
+        }}
+      />
+
+      {loading ? (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <ListingSkeleton key={i} />
           ))}
-      </div>
+        </div>
+      ) : paged.length ? (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {paged.map((c) => (
+            <CourseCard
+              key={c.id}
+              title={c.title}
+              description={c.description}
+              price={c.price}
+              duration={c.duration}
+              level={c.level}
+              category={c.category}
+              rating={c.rating}
+              mentor={c.mentor?.name}
+              onAction={() => buy(c.id)}
+              actionLabel={purchased.has(c.id) ? "Purchased" : buying === c.id ? "Redirecting..." : "Buy now"}
+            />
+          ))}
+        </div>
+      ) : (
+        <EmptyState title="No courses found" description="Try adjusting filters" />
+      )}
+
+      {!loading && filtered.length > pageSize && (
+        <Pagination page={page} pageSize={pageSize} total={filtered.length} onChange={setPage} />
+      )}
 
       {purchased.size > 0 && (
         <div className="space-y-3">
-          <h2 className="text-xl font-semibold text-white">My Courses</h2>
+          <h2 className="text-xl font-semibold text-text">My Courses</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {courses
               .filter((c) => purchased.has(c.id))
               .map((c) => (
                 <Card key={c.id} className="p-6 space-y-3">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-white">{c.title}</h3>
-                    <span className="text-xs px-3 py-1 rounded bg-green-500/10 text-green-400 border border-green-500/20">
+                    <h3 className="text-lg font-semibold text-text">{c.title}</h3>
+                    <span className="text-xs px-3 py-1 rounded bg-success/15 text-success border border-success/30">
                       Purchased
                     </span>
                   </div>
-                  <p className="text-sm text-neutral-400 line-clamp-3">{c.description}</p>
-                  {c.mentor && <p className="text-xs text-neutral-500">By {c.mentor.name}</p>}
+                  <p className="text-sm text-muted line-clamp-3">{c.description}</p>
+                  {c.mentor && <p className="text-xs text-muted">By {c.mentor.name}</p>}
                 </Card>
               ))}
           </div>

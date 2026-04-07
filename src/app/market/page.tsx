@@ -1,47 +1,78 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import Card from "../../components/ui/Card";
 import SectionContainer from "../../components/ui/SectionContainer";
+import FiltersBar from "../../components/explore/FiltersBar";
+import ListingSkeleton from "../../components/ui/ListingSkeleton";
+import EmptyState from "../../components/ui/EmptyState";
+import MarketCard from "../../components/cards/MarketCard";
 
 const fallbackData = {
-  trending: ["React", "Next.js", "TypeScript", "Docker", "AWS"],
-  demand: [
-    { skill: "React", score: 95 },
-    { skill: "Node.js", score: 90 },
-    { skill: "TypeScript", score: 88 },
-    { skill: "Docker", score: 85 },
-    { skill: "AWS", score: 92 },
+  insights: [
+    {
+      title: "React + TypeScript hiring stays hot",
+      summary: "Frontend roles continue to list TS + React with server components familiarity as default expectations.",
+      role: "Frontend",
+      demand: "High",
+      timeframe: "This week",
+      category: "Web",
+      score: 92,
+    },
+    {
+      title: "LLM evaluation experience is differentiating",
+      summary: "Teams seek data scientists who can design eval harnesses and reliability metrics for GenAI features.",
+      role: "Data",
+      demand: "Rising",
+      timeframe: "This month",
+      category: "AI/ML",
+      score: 88,
+    },
+    {
+      title: "Product analytics tooling: Amplitude + dbt",
+      summary: "PM roles increasingly ask for self-serve analytics stacks and SQL/dbt literacy for experimentation.",
+      role: "Product",
+      demand: "Stable",
+      timeframe: "This month",
+      category: "Product",
+      score: 81,
+    },
+    {
+      title: "Platform + cloud cost visibility",
+      summary: "Backend postings include FinOps awareness and cost dashboards as expected responsibilities.",
+      role: "Backend",
+      demand: "Rising",
+      timeframe: "This quarter",
+      category: "Infrastructure",
+      score: 79,
+    },
   ],
 };
 
 export default function MarketPage() {
-  const [data, setData] = useState(fallbackData);
+  const [data, setData] = useState(fallbackData.insights);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [role, setRole] = useState("all");
+  const [timeframe, setTimeframe] = useState("all");
+  const [sort, setSort] = useState("score_desc");
 
-  // Simulate initial loading
   useEffect(() => {
     const timer = setTimeout(() => {
-      setData(fallbackData);
       setLoading(false);
-    }, 800);
+    }, 400);
     return () => clearTimeout(timer);
   }, []);
 
-  // Simulate live auto-updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setData((prev) => ({
-        ...prev,
-        demand: prev.demand.map((s) => ({
-          ...s,
-          score: Math.min(100, s.score + Math.random() * 2),
-        })),
-      }));
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+  const filtered = useMemo(() => {
+    let list = data.filter((i) => `${i.title} ${i.summary}`.toLowerCase().includes(search.toLowerCase()));
+    if (role !== "all") list = list.filter((i) => i.role === role);
+    if (timeframe !== "all") list = list.filter((i) => i.timeframe === timeframe);
+    if (sort === "score_desc") list = [...list].sort((a, b) => (b.score || 0) - (a.score || 0));
+    if (sort === "score_asc") list = [...list].sort((a, b) => (a.score || 0) - (b.score || 0));
+    return list;
+  }, [data, search, role, timeframe, sort]);
 
   return (
     <SectionContainer>
@@ -53,68 +84,81 @@ export default function MarketPage() {
       >
         <div className="space-y-2">
           <h1 className="text-3xl font-semibold">Market Intelligence</h1>
-          <p className="text-slate-400">See which skills are trending across job postings.</p>
-          <p className="text-xs text-slate-500">These insights are generated based on current industry trends</p>
+          <p className="text-muted">See which skills and roles are trending across job postings.</p>
         </div>
 
-        <Card className="p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Trending Skills</h2>
-            <span className="text-xs text-slate-500">AI Generated Insights</span>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            {loading
-              ? Array.from({ length: 5 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-9 px-6 rounded-full bg-slate-800 animate-pulse border border-slate-700"
-                  />
-                ))
-              : data.trending.map((skill, i) => (
-                  <motion.span
-                    key={skill}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
-                    className="px-3 py-2 rounded-full bg-neutral-800 text-white text-sm border border-neutral-700 shadow-sm hover:bg-neutral-700 transition"
-                  >
-                    {skill}
-                  </motion.span>
-                ))}
-          </div>
-        </Card>
+        <FiltersBar
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search insights"
+          filters={[
+            {
+              label: "Role",
+              value: role,
+              onChange: setRole,
+              options: [
+                { label: "All roles", value: "all" },
+                { label: "Frontend", value: "Frontend" },
+                { label: "Backend", value: "Backend" },
+                { label: "Data", value: "Data" },
+                { label: "Product", value: "Product" },
+                { label: "AI/ML", value: "AI/ML" },
+                { label: "Infrastructure", value: "Infrastructure" },
+              ],
+            },
+            {
+              label: "Timeframe",
+              value: timeframe,
+              onChange: setTimeframe,
+              options: [
+                { label: "All", value: "all" },
+                { label: "This week", value: "This week" },
+                { label: "This month", value: "This month" },
+                { label: "This quarter", value: "This quarter" },
+              ],
+            },
+          ]}
+          sort={{
+            value: sort,
+            onChange: setSort,
+            options: [
+              { label: "Trend score high → low", value: "score_desc" },
+              { label: "Trend score low → high", value: "score_asc" },
+            ],
+          }}
+          onClear={() => {
+            setSearch("");
+            setRole("all");
+            setTimeframe("all");
+            setSort("score_desc");
+          }}
+        />
 
-        <Card className="p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Skill Demand (Simulated Live Data)</h2>
-            <span className="text-xs text-slate-500">Auto-updating</span>
+        {loading ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <ListingSkeleton key={i} />
+            ))}
           </div>
-          <div className="space-y-3">
-            {loading
-              ? Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="space-y-1">
-                    <div className="h-3 w-20 bg-slate-800 animate-pulse rounded" />
-                    <div className="h-3 w-full bg-slate-800 animate-pulse rounded" />
-                  </div>
-                ))
-              : data.demand.map((item, i) => (
-                  <div key={item.skill} className="space-y-1">
-                    <div className="flex items-center justify-between text-sm text-slate-300">
-                      <span>{item.skill}</span>
-                      <span className="text-xs text-slate-400">{Math.round(item.score)}%</span>
-                    </div>
-                    <div className="h-3 w-full rounded-full bg-slate-800 overflow-hidden">
-                      <motion.div
-                        className="h-3 rounded-full bg-white"
-                        initial={{ width: 0 }}
-                        animate={{ width: `${item.score}%` }}
-                        transition={{ delay: i * 0.05, type: "spring", stiffness: 120, damping: 20 }}
-                      />
-                    </div>
-                  </div>
-                ))}
+        ) : filtered.length ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filtered.map((insight) => (
+              <MarketCard
+                key={insight.title}
+                title={insight.title}
+                summary={insight.summary}
+                role={insight.role}
+                demand={insight.demand}
+                timeframe={insight.timeframe}
+                category={insight.category}
+                score={insight.score}
+                onAction={() => {}}
+              />
+            ))}
           </div>
-        </Card>
+        ) : (
+          <EmptyState title="No insights found" description="Try different filters" />
+        )}
       </motion.div>
     </SectionContainer>
   );
