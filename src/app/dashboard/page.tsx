@@ -12,6 +12,7 @@ import EmptyState from "../../components/ui/EmptyState";
 import DashboardShell from "../../components/dashboard/DashboardShell";
 import Badge from "../../components/ui/Badge";
 import ListingSkeleton from "../../components/ui/ListingSkeleton";
+import RecommendationPanel from "../../components/ai/RecommendationPanel";
 
 type Profile = { id: string; name: string; email: string; role: string; createdAt: string };
 type Capability = {
@@ -45,6 +46,8 @@ export default function DashboardPage() {
   const [uploadMessage, setUploadMessage] = useState<string | null>(null);
   const [autoAnalyzing, setAutoAnalyzing] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [recommendedMentors, setRecommendedMentors] = useState<any[]>([]);
+  const [recommendedCourses, setRecommendedCourses] = useState<any[]>([]);
 
   const loadDashboard = async () => {
     try {
@@ -71,6 +74,8 @@ export default function DashboardPage() {
         setTrending(payload);
       });
       api.get("/capability/missing-skills").then((res) => setTodos(res.data || []));
+      api.get("/mentor/mentors").then((res) => setRecommendedMentors(res.data || []));
+      api.get("/courses").then((res) => setRecommendedCourses(res.data || []));
     } catch (err: any) {
       setError(err?.response?.data?.message || "Failed to load dashboard");
     } finally {
@@ -157,6 +162,27 @@ export default function DashboardPage() {
     return todos.slice(start, start + pageSize);
   }, [todos, taskPage]);
   const totalPages = Math.max(1, Math.ceil(todos.length / pageSize));
+
+  const mentorRecs = useMemo(() => {
+    const industries = ["Frontend", "Backend", "Data", "Product"];
+    return (recommendedMentors || []).slice(0, 3).map((m: any, idx: number) => ({
+      title: m.name,
+      subtitle: m.mentorProfile?.title || `${industries[idx % industries.length]} mentor`,
+      reason: `Matches your ${industries[idx % industries.length]} roadmap and trending demand`,
+      href: `/mentors/${m.id}`,
+      ctaLabel: "View mentor",
+    }));
+  }, [recommendedMentors]);
+
+  const courseRecs = useMemo(() => {
+    return (recommendedCourses || []).slice(0, 3).map((c: any) => ({
+      title: c.title,
+      subtitle: c.description,
+      reason: "Helps close a skill gap highlighted in your latest analysis",
+      href: `/courses/${c.id}`,
+      ctaLabel: "View course",
+    }));
+  }, [recommendedCourses]);
 
   return (
     <DashboardShell role={user?.role || "USER"} title="Overview">
@@ -278,6 +304,9 @@ export default function DashboardPage() {
               )) : <p className="text-sm text-muted">No market data yet.</p>}
             </div>
           </Card>
+
+          <RecommendationPanel title="Recommended mentors" items={mentorRecs} />
+          <RecommendationPanel title="Recommended courses" items={courseRecs} />
         </>
       )}
     </DashboardShell>

@@ -8,6 +8,7 @@ import FiltersBar from "../../components/explore/FiltersBar";
 import ListingSkeleton from "../../components/ui/ListingSkeleton";
 import EmptyState from "../../components/ui/EmptyState";
 import MarketCard from "../../components/cards/MarketCard";
+import SuggestionList from "../../components/ai/SuggestionList";
 
 const fallbackData = {
   insights: [
@@ -57,6 +58,8 @@ export default function MarketPage() {
   const [role, setRole] = useState("all");
   const [timeframe, setTimeframe] = useState("all");
   const [sort, setSort] = useState("score_desc");
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -64,6 +67,17 @@ export default function MarketPage() {
     }, 400);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (!search) {
+      setSuggestions([]);
+      return;
+    }
+    const pool = data.flatMap((i) => [i.title, i.role, i.category, i.demand]).filter(Boolean) as string[];
+    const uniq = Array.from(new Set(pool));
+    const ranked = uniq.filter((item) => item.toLowerCase().includes(search.toLowerCase())).slice(0, 6);
+    setSuggestions(ranked);
+  }, [search, data]);
 
   const filtered = useMemo(() => {
     let list = data.filter((i) => `${i.title} ${i.summary}`.toLowerCase().includes(search.toLowerCase()));
@@ -87,52 +101,65 @@ export default function MarketPage() {
           <p className="text-muted">See which skills and roles are trending across job postings.</p>
         </div>
 
-        <FiltersBar
-          search={search}
-          onSearchChange={setSearch}
-          searchPlaceholder="Search insights"
-          filters={[
-            {
-              label: "Role",
-              value: role,
-              onChange: setRole,
+        <div className="relative">
+          <FiltersBar
+            search={search}
+            onSearchChange={(v) => {
+              setSearch(v);
+              setShowSuggestions(true);
+            }}
+            searchPlaceholder="Search insights"
+            filters={[
+              {
+                label: "Role",
+                value: role,
+                onChange: setRole,
+                options: [
+                  { label: "All roles", value: "all" },
+                  { label: "Frontend", value: "Frontend" },
+                  { label: "Backend", value: "Backend" },
+                  { label: "Data", value: "Data" },
+                  { label: "Product", value: "Product" },
+                  { label: "AI/ML", value: "AI/ML" },
+                  { label: "Infrastructure", value: "Infrastructure" },
+                ],
+              },
+              {
+                label: "Timeframe",
+                value: timeframe,
+                onChange: setTimeframe,
+                options: [
+                  { label: "All", value: "all" },
+                  { label: "This week", value: "This week" },
+                  { label: "This month", value: "This month" },
+                  { label: "This quarter", value: "This quarter" },
+                ],
+              },
+            ]}
+            sort={{
+              value: sort,
+              onChange: setSort,
               options: [
-                { label: "All roles", value: "all" },
-                { label: "Frontend", value: "Frontend" },
-                { label: "Backend", value: "Backend" },
-                { label: "Data", value: "Data" },
-                { label: "Product", value: "Product" },
-                { label: "AI/ML", value: "AI/ML" },
-                { label: "Infrastructure", value: "Infrastructure" },
+                { label: "Trend score high → low", value: "score_desc" },
+                { label: "Trend score low → high", value: "score_asc" },
               ],
-            },
-            {
-              label: "Timeframe",
-              value: timeframe,
-              onChange: setTimeframe,
-              options: [
-                { label: "All", value: "all" },
-                { label: "This week", value: "This week" },
-                { label: "This month", value: "This month" },
-                { label: "This quarter", value: "This quarter" },
-              ],
-            },
-          ]}
-          sort={{
-            value: sort,
-            onChange: setSort,
-            options: [
-              { label: "Trend score high → low", value: "score_desc" },
-              { label: "Trend score low → high", value: "score_asc" },
-            ],
-          }}
-          onClear={() => {
-            setSearch("");
-            setRole("all");
-            setTimeframe("all");
-            setSort("score_desc");
-          }}
-        />
+            }}
+            onClear={() => {
+              setSearch("");
+              setRole("all");
+              setTimeframe("all");
+              setSort("score_desc");
+            }}
+          />
+          <SuggestionList
+            suggestions={suggestions}
+            visible={showSuggestions && search.length > 1}
+            onSelect={(val) => {
+              setSearch(val);
+              setShowSuggestions(false);
+            }}
+          />
+        </div>
 
         {loading ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">

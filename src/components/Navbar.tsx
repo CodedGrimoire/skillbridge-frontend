@@ -80,7 +80,7 @@ export default function Navbar() {
                   <ChevronDown className="h-4 w-4" />
                 </summary>
                 <div className="absolute right-0 mt-2 w-56 rounded-lg border border-border bg-card shadow-soft p-2 space-y-1 z-50">
-                  {[{ label: "Guides", href: "/market" }, { label: "FAQ", href: "#faq" }, { label: "Customer Stories", href: "#stories" }].map((item) => (
+                  {[{ label: "Market", href: "/market" }, { label: "Help", href: "/help" }, { label: "About", href: "/about" }, { label: "Contact", href: "/contact" }].map((item) => (
                     <Link key={item.label} href={item.href} className="block px-3 py-2 rounded-md text-sm text-text hover:bg-primary/10">
                       {item.label}
                     </Link>

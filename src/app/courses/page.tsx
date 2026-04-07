@@ -10,6 +10,8 @@ import ListingSkeleton from "../../components/ui/ListingSkeleton";
 import EmptyState from "../../components/ui/EmptyState";
 import CourseCard from "../../components/cards/CourseCard";
 import Pagination from "../../components/explore/Pagination";
+import SuggestionList from "../../components/ai/SuggestionList";
+import RecommendationPanel from "../../components/ai/RecommendationPanel";
 
 type Course = {
   id: string;
@@ -36,6 +38,8 @@ export default function CoursesPage() {
   const [sort, setSort] = useState("price_asc");
   const [page, setPage] = useState(1);
   const pageSize = 9;
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
     if (user?.role === "ADMIN") {
@@ -95,6 +99,31 @@ export default function CoursesPage() {
     return filtered.slice(start, start + pageSize);
   }, [filtered, page]);
 
+  useEffect(() => {
+    if (!search) {
+      setSuggestions([]);
+      return;
+    }
+    const pool = courses.flatMap((c) => [c.title, c.category, c.level]).filter(Boolean) as string[];
+    const uniq = Array.from(new Set(pool));
+    const ranked = uniq.filter((item) => item.toLowerCase().includes(search.toLowerCase())).slice(0, 5);
+    if (ranked.length < 5) {
+      ranked.push(...["Interview prep", "Portfolio", "System design"].filter((r) => r.toLowerCase().includes(search.toLowerCase())));
+    }
+    setSuggestions(ranked.slice(0, 5));
+  }, [search, courses]);
+
+  const courseRecs = useMemo(() => {
+    if (!courses.length) return [];
+    return courses.slice(0, 3).map((c) => ({
+      title: c.title,
+      subtitle: c.description,
+      reason: `High demand for ${c.category || "this"} and matches your filters`,
+      href: `/courses/${c.id}`,
+      ctaLabel: "View course",
+    }));
+  }, [courses]);
+
   return (
     <SectionContainer className="py-10 space-y-6">
       <div className="space-y-1">
@@ -104,61 +133,72 @@ export default function CoursesPage() {
 
       {error && <p className="text-sm text-danger">{error}</p>}
 
-      <FiltersBar
-        search={search}
-        onSearchChange={(v) => {
-          setSearch(v);
-          setPage(1);
-        }}
-        searchPlaceholder="Search courses"
-        filters={[
-          {
-            label: "Category",
-            value: category,
-            onChange: (v) => {
-              setCategory(v);
-              setPage(1);
+      <div className="relative">
+        <FiltersBar
+          search={search}
+          onSearchChange={(v) => {
+            setSearch(v);
+            setShowSuggestions(true);
+            setPage(1);
+          }}
+          searchPlaceholder="Search courses"
+          filters={[
+            {
+              label: "Category",
+              value: category,
+              onChange: (v) => {
+                setCategory(v);
+                setPage(1);
+              },
+              options: [
+                { label: "All categories", value: "all" },
+                { label: "Frontend", value: "Frontend" },
+                { label: "Backend", value: "Backend" },
+                { label: "Data", value: "Data" },
+                { label: "Product", value: "Product" },
+              ],
             },
-            options: [
-              { label: "All categories", value: "all" },
-              { label: "Frontend", value: "Frontend" },
-              { label: "Backend", value: "Backend" },
-              { label: "Data", value: "Data" },
-              { label: "Product", value: "Product" },
-            ],
-          },
-          {
-            label: "Level",
-            value: level,
-            onChange: (v) => {
-              setLevel(v);
-              setPage(1);
+            {
+              label: "Level",
+              value: level,
+              onChange: (v) => {
+                setLevel(v);
+                setPage(1);
+              },
+              options: [
+                { label: "All levels", value: "all" },
+                { label: "Beginner", value: "Beginner" },
+                { label: "Intermediate", value: "Intermediate" },
+                { label: "Advanced", value: "Advanced" },
+              ],
             },
+          ]}
+          sort={{
+            value: sort,
+            onChange: (v) => setSort(v),
             options: [
-              { label: "All levels", value: "all" },
-              { label: "Beginner", value: "Beginner" },
-              { label: "Intermediate", value: "Intermediate" },
-              { label: "Advanced", value: "Advanced" },
+              { label: "Sort: Price low → high", value: "price_asc" },
+              { label: "Sort: Price high → low", value: "price_desc" },
+              { label: "Sort: Rating", value: "rating_desc" },
             ],
-          },
-        ]}
-        sort={{
-          value: sort,
-          onChange: (v) => setSort(v),
-          options: [
-            { label: "Sort: Price low → high", value: "price_asc" },
-            { label: "Sort: Price high → low", value: "price_desc" },
-            { label: "Sort: Rating", value: "rating_desc" },
-          ],
-        }}
-        onClear={() => {
-          setSearch("");
-          setCategory("all");
-          setLevel("all");
-          setSort("price_asc");
-          setPage(1);
-        }}
-      />
+          }}
+          onClear={() => {
+            setSearch("");
+            setCategory("all");
+            setLevel("all");
+            setSort("price_asc");
+            setPage(1);
+          }}
+        />
+        <SuggestionList
+          suggestions={suggestions}
+          visible={showSuggestions && search.length > 1}
+          onSelect={(val) => {
+            setSearch(val);
+            setShowSuggestions(false);
+          }}
+        />
+      </div>
 
       {loading ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -191,6 +231,8 @@ export default function CoursesPage() {
       {!loading && filtered.length > pageSize && (
         <Pagination page={page} pageSize={pageSize} total={filtered.length} onChange={setPage} />
       )}
+
+      {!loading && <RecommendationPanel title="Recommended for you" items={courseRecs} />}
 
       {purchased.size > 0 && (
         <div className="space-y-3">

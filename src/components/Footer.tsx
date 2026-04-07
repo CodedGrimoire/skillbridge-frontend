@@ -11,7 +11,9 @@ const links = {
     { label: "Market", href: "/market" },
     { label: "Career Path", href: "/career-path" },
     { label: "Tasks", href: "/tasks" },
-    { label: "FAQ", href: "#faq" },
+    { label: "Help", href: "/help" },
+    { label: "About", href: "/about" },
+    { label: "Contact", href: "/contact" },
   ],
   company: [
     { label: "Contact", href: "mailto:hello@skillbridge.ai" },

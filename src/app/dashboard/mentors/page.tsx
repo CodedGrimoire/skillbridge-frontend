@@ -9,6 +9,8 @@ import ListingSkeleton from "../../../components/ui/ListingSkeleton";
 import EmptyState from "../../../components/ui/EmptyState";
 import MentorCard from "../../../components/cards/MentorCard";
 import Button from "../../../components/ui/Button";
+import SuggestionList from "../../../components/ai/SuggestionList";
+import RecommendationPanel from "../../../components/ai/RecommendationPanel";
 
 type Mentor = { id: string; name: string; email: string };
 type MentorProfile = Mentor & { mentorProfile?: { title?: string | null; rating?: number | null } };
@@ -29,6 +31,8 @@ export default function MentorSearchPage() {
   const [sort, setSort] = useState("rating_desc");
   const [page, setPage] = useState(1);
   const pageSize = 8;
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -56,6 +60,20 @@ export default function MentorSearchPage() {
     industry: ["Product", "Data", "Frontend", "Backend"][idx % 4],
   }));
 
+  useEffect(() => {
+    if (!query) {
+      setSuggestions([]);
+      return;
+    }
+    const pool = decorated.flatMap((m) => [m.name, m.title, m.industry]).filter(Boolean) as string[];
+    const uniq = Array.from(new Set(pool));
+    const ranked = uniq.filter((item) => item.toLowerCase().includes(query.toLowerCase())).slice(0, 5);
+    if (ranked.length < 5) {
+      ranked.push(...["Interview prep", "Portfolio review", "Mock interview"].filter((r) => r.toLowerCase().includes(query.toLowerCase())));
+    }
+    setSuggestions(ranked.slice(0, 5));
+  }, [query, decorated]);
+
   const filtered = useMemo(() => {
     let list = decorated.filter((m) =>
       `${m.name} ${m.email} ${m.title}`.toLowerCase().includes(query.toLowerCase())
@@ -73,6 +91,16 @@ export default function MentorSearchPage() {
     const start = (page - 1) * pageSize;
     return filtered.slice(start, start + pageSize);
   }, [filtered, page]);
+
+  const mentorRecs = useMemo(() => {
+    return filtered.slice(0, 3).map((m) => ({
+      title: m.name,
+      subtitle: m.title,
+      reason: `Strong ${m.industry} demand and aligns with your interests`,
+      href: `/mentors/${m.id}`,
+      ctaLabel: "View mentor",
+    }));
+  }, [filtered]);
 
   const requestMentor = async (mentorId: string) => {
     await api.post("/mentor/requests", { mentorId, message });
@@ -132,61 +160,72 @@ export default function MentorSearchPage() {
             <p className="text-sm text-muted">Browse mentors and send an invitation with filters that match your needs.</p>
           </div>
 
-          <FiltersBar
-            search={query}
-            onSearchChange={(v) => {
-              setQuery(v);
-              setPage(1);
-            }}
-            searchPlaceholder="Search by name, email, or specialty"
-            filters={[
-              {
-                label: "Expertise",
-                value: expertise,
-                onChange: (v) => {
-                  setExpertise(v);
-                  setPage(1);
+          <div className="relative">
+            <FiltersBar
+              search={query}
+              onSearchChange={(v) => {
+                setQuery(v);
+                setShowSuggestions(true);
+                setPage(1);
+              }}
+              searchPlaceholder="Search by name, email, or specialty"
+              filters={[
+                {
+                  label: "Expertise",
+                  value: expertise,
+                  onChange: (v) => {
+                    setExpertise(v);
+                    setPage(1);
+                  },
+                  options: [
+                    { label: "All expertise", value: "all" },
+                    { label: "Product", value: "Product" },
+                    { label: "Data", value: "Data" },
+                    { label: "Frontend", value: "Frontend" },
+                    { label: "Backend", value: "Backend" },
+                  ],
                 },
-                options: [
-                  { label: "All expertise", value: "all" },
-                  { label: "Product", value: "Product" },
-                  { label: "Data", value: "Data" },
-                  { label: "Frontend", value: "Frontend" },
-                  { label: "Backend", value: "Backend" },
-                ],
-              },
-              {
-                label: "Rating",
-                value: ratingFilter,
-                onChange: (v) => {
-                  setRatingFilter(v);
-                  setPage(1);
+                {
+                  label: "Rating",
+                  value: ratingFilter,
+                  onChange: (v) => {
+                    setRatingFilter(v);
+                    setPage(1);
+                  },
+                  options: [
+                    { label: "All ratings", value: "all" },
+                    { label: "4.5+", value: "4.5" },
+                    { label: "4.0+", value: "4.0" },
+                    { label: "3.5+", value: "3.5" },
+                  ],
                 },
+              ]}
+              sort={{
+                value: sort,
+                onChange: (v) => setSort(v),
                 options: [
-                  { label: "All ratings", value: "all" },
-                  { label: "4.5+", value: "4.5" },
-                  { label: "4.0+", value: "4.0" },
-                  { label: "3.5+", value: "3.5" },
+                  { label: "Sort: Rating high → low", value: "rating_desc" },
+                  { label: "Sort: Rating low → high", value: "rating_asc" },
+                  { label: "Sort: Name A→Z", value: "name" },
                 ],
-              },
-            ]}
-            sort={{
-              value: sort,
-              onChange: (v) => setSort(v),
-              options: [
-                { label: "Sort: Rating high → low", value: "rating_desc" },
-                { label: "Sort: Rating low → high", value: "rating_asc" },
-                { label: "Sort: Name A→Z", value: "name" },
-              ],
-            }}
-            onClear={() => {
-              setQuery("");
-              setExpertise("all");
-              setRatingFilter("all");
-              setSort("rating_desc");
-              setPage(1);
-            }}
-          />
+              }}
+              onClear={() => {
+                setQuery("");
+                setExpertise("all");
+                setRatingFilter("all");
+                setSort("rating_desc");
+                setPage(1);
+              }}
+            />
+            <SuggestionList
+              suggestions={suggestions}
+              visible={showSuggestions && query.length > 1}
+              onSelect={(val) => {
+                setQuery(val);
+                setShowSuggestions(false);
+              }}
+            />
+          </div>
 
           {loading ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -217,6 +256,8 @@ export default function MentorSearchPage() {
           {!loading && filtered.length > pageSize && (
             <Pagination page={page} pageSize={pageSize} total={filtered.length} onChange={setPage} />
           )}
+
+          {!loading && <RecommendationPanel title="Recommended mentors" items={mentorRecs} />}
 
           {expanded && (
             <div className="sb-card p-5 space-y-3">
