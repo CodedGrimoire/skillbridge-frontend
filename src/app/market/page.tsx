@@ -152,7 +152,7 @@ export default function MarketPage() {
                 timeframe={insight.timeframe}
                 category={insight.category}
                 score={insight.score}
-                onAction={() => {}}
+                href={`/market/${encodeURIComponent(insight.title.toLowerCase().replace(/\s+/g, "-"))}`}
               />
             ))}
           </div>

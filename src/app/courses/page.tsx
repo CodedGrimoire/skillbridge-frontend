@@ -179,8 +179,8 @@ export default function CoursesPage() {
               category={c.category}
               rating={c.rating}
               mentor={c.mentor?.name}
-              onAction={() => buy(c.id)}
-              actionLabel={purchased.has(c.id) ? "Purchased" : buying === c.id ? "Redirecting..." : "Buy now"}
+              href={`/courses/${c.id}`}
+              actionLabel="View Details"
             />
           ))}
         </div>

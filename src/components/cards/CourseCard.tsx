@@ -1,6 +1,7 @@
 import Card from "../ui/Card";
 import Badge from "../ui/Badge";
 import Button from "../ui/Button";
+import Link from "next/link";
 
 export type CourseCardProps = {
   title: string;
@@ -13,9 +14,10 @@ export type CourseCardProps = {
   mentor?: string;
   onAction?: () => void;
   actionLabel?: string;
+  href?: string;
 };
 
-export default function CourseCard({ title, description, price, duration, level, category, rating, mentor, onAction, actionLabel = "View Details" }: CourseCardProps) {
+export default function CourseCard({ title, description, price, duration, level, category, rating, mentor, onAction, actionLabel = "View Details", href }: CourseCardProps) {
   return (
     <Card className="p-5 space-y-3 h-full flex flex-col">
       <div className="h-28 w-full rounded-lg bg-gradient-to-br from-primary/10 via-secondary/5 to-card" />
@@ -34,9 +36,14 @@ export default function CourseCard({ title, description, price, duration, level,
         {mentor && <span className="text-muted">By {mentor}</span>}
       </div>
       <div className="mt-auto">
-        <Button fullWidth onClick={onAction}>{actionLabel}</Button>
+        {href ? (
+          <Button fullWidth asChild>
+            <Link href={href}>{actionLabel}</Link>
+          </Button>
+        ) : (
+          <Button fullWidth onClick={onAction}>{actionLabel}</Button>
+        )}
       </div>
     </Card>
   );
 }
-

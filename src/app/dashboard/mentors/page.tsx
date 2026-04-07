@@ -205,7 +205,8 @@ export default function MentorSearchPage() {
                   rating={m.rating as number}
                   sessions={m.sessions}
                   industry={m.industry}
-                  onAction={() => setExpanded(expanded === m.id ? null : m.id)}
+                  href={`/mentors/${m.id}`}
+                  ctaLabel="View Profile"
                 />
               ))}
             </div>

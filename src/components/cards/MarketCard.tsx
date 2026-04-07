@@ -1,6 +1,7 @@
 import Card from "../ui/Card";
 import Badge from "../ui/Badge";
 import Button from "../ui/Button";
+import Link from "next/link";
 
 export type MarketCardProps = {
   title: string;
@@ -11,9 +12,10 @@ export type MarketCardProps = {
   category?: string;
   score?: number;
   onAction?: () => void;
+  href?: string;
 };
 
-export default function MarketCard({ title, summary, role, demand, timeframe, category, score, onAction }: MarketCardProps) {
+export default function MarketCard({ title, summary, role, demand, timeframe, category, score, onAction, href }: MarketCardProps) {
   return (
     <Card className="p-5 space-y-3 h-full flex flex-col">
       <div className="flex items-center justify-between text-sm">
@@ -30,11 +32,16 @@ export default function MarketCard({ title, summary, role, demand, timeframe, ca
         {timeframe && <Badge tone="warning">{timeframe}</Badge>}
       </div>
       <div className="mt-auto">
-        <Button variant="secondary" fullWidth onClick={onAction}>
-          View insight
-        </Button>
+        {href ? (
+          <Button variant="secondary" fullWidth asChild>
+            <Link href={href}>View insight</Link>
+          </Button>
+        ) : (
+          <Button variant="secondary" fullWidth onClick={onAction}>
+            View insight
+          </Button>
+        )}
       </div>
     </Card>
   );
 }
-

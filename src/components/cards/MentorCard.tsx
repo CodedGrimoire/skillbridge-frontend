@@ -1,6 +1,7 @@
 import Card from "../ui/Card";
 import Badge from "../ui/Badge";
 import Button from "../ui/Button";
+import Link from "next/link";
 
 export type MentorCardProps = {
   name: string;
@@ -12,9 +13,11 @@ export type MentorCardProps = {
   availability?: string;
   bio?: string;
   onAction?: () => void;
+  href?: string;
+  ctaLabel?: string;
 };
 
-export default function MentorCard({ name, title, email, rating, sessions, industry, availability = "Available", bio, onAction }: MentorCardProps) {
+export default function MentorCard({ name, title, email, rating, sessions, industry, availability = "Available", bio, onAction, href, ctaLabel = "View Profile" }: MentorCardProps) {
   return (
     <Card className="p-5 space-y-3 h-full flex flex-col">
       <div className="flex items-start gap-3">
@@ -35,9 +38,14 @@ export default function MentorCard({ name, title, email, rating, sessions, indus
         {availability && <Badge tone="secondary">{availability}</Badge>}
       </div>
       <div className="mt-auto pt-2">
-        <Button fullWidth onClick={onAction}>Request Mentor</Button>
+        {href ? (
+          <Button fullWidth asChild>
+            <Link href={href}>{ctaLabel}</Link>
+          </Button>
+        ) : (
+          <Button fullWidth onClick={onAction}>{ctaLabel}</Button>
+        )}
       </div>
     </Card>
   );
 }
-
