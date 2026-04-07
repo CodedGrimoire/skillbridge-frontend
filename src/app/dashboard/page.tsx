@@ -3,17 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "../../services/api";
-import DashboardStats from "../../components/DashboardStats";
-import LoadingCard from "../../components/LoadingCard";
-import UploadResume from "../../components/UploadResume";
 import { useRequireAuth } from "../../hooks/useRequireAuth";
 import { useAuth } from "../../hooks/useAuth";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
-import Input from "../../components/ui/Input";
 import EmptyState from "../../components/ui/EmptyState";
-import Skeleton from "../../components/ui/Skeleton";
+import DashboardShell from "../../components/dashboard/DashboardShell";
+import Badge from "../../components/ui/Badge";
+import ListingSkeleton from "../../components/ui/ListingSkeleton";
 
 type Profile = { id: string; name: string; email: string; role: string; createdAt: string };
 type Capability = {
@@ -147,244 +145,141 @@ export default function DashboardPage() {
     setAutoAnalyzing(false);
   };
 
-  if (authLoading || loading) {
-    return (
-      <div className="max-w-6xl mx-auto px-4 py-12 space-y-4">
-        <LoadingCard lines={2} />
-        <LoadingCard lines={3} />
-        <LoadingCard lines={4} />
-      </div>
-    );
-  }
+  const trendLine = useMemo(
+    () => history.map((h) => ({ name: new Date(h.createdAt).toLocaleDateString(), score: h.matchScore })),
+    [history]
+  );
+
+  const [taskPage, setTaskPage] = useState(1);
+  const pageSize = 5;
+  const pagedTodos = useMemo(() => {
+    const start = (taskPage - 1) * pageSize;
+    return todos.slice(start, start + pageSize);
+  }, [todos, taskPage]);
+  const totalPages = Math.max(1, Math.ceil(todos.length / pageSize));
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-12 space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-semibold">Dashboard</h1>
-          <p className="text-slate-400">Track your profile, resume fit, and market signals.</p>
-        </div>
-        {profile && (
-          <div className="card px-4 py-2 text-sm text-slate-300">
-            {profile.name} • {profile.email} • {profile.role}
-          </div>
-        )}
-      </div>
+    <DashboardShell role={user?.role || "USER"} title="Overview">
+      {error && <p className="text-danger text-sm">{error}</p>}
 
-      {error && <p className="text-red-400 text-sm">{error}</p>}
-
-      <div className="grid lg:grid-cols-2 gap-6">
-        <UploadResume onUploaded={handleUploaded} />
-
-        <div className="card p-6 space-y-3">
-          <h2 className="text-xl font-semibold">Profile Links</h2>
-          <div className="grid md:grid-cols-2 gap-3">
-            {[
-              { key: "resumeUrl", label: "Resume URL" },
-              { key: "linkedinUrl", label: "LinkedIn URL" },
-              { key: "githubUrl", label: "GitHub URL" },
-              { key: "portfolioUrl", label: "Portfolio URL" },
-            ].map((f) => (
-              <div key={f.key} className="space-y-1">
-                <label className="text-sm text-slate-400">{f.label}</label>
-                <input
-                  value={(links as any)[f.key] || ""}
-                  onChange={(e) => setLinks((prev) => ({ ...prev, [f.key]: e.target.value }))}
-                  className="w-full rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm"
-                />
-              </div>
-            ))}
-          </div>
-          <button onClick={saveLinks} disabled={linksSaving} className="btn-primary px-4 py-2 text-sm">
-            {linksSaving ? "Saving..." : "Save Links"}
-          </button>
-          {uploadMessage && <p className="text-xs text-slate-400">{uploadMessage}</p>}
-        </div>
-      </div>
-
-      <div className="card p-6">
-        <h2 className="text-xl font-semibold mb-3">Your Skills</h2>
-        <div className="flex flex-wrap gap-2">
-          {skills.length ? (
-            skills.map((s) => (
-              <span key={s} className="px-3 py-1 rounded-full bg-accent/10 text-accent text-sm">
-                {s}
-              </span>
-            ))
-          ) : (
-            <p className="text-slate-400 text-sm">No skills detected yet. Upload a resume to begin.</p>
-          )}
-        </div>
-      </div>
-
-      {/* Capability Analysis */}
-      <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <h2 className="text-xl font-semibold">Resume Fit & Capable Roles</h2>
-          <button
-            onClick={runCapabilityAnalysis}
-            disabled={capLoading || autoAnalyzing}
-            className="btn-primary px-4 py-2 text-sm w-full sm:w-auto"
-          >
-            {capLoading || autoAnalyzing ? "Analyzing..." : "Re-run Analysis"}
-          </button>
-        </div>
-
-        {capability ? (
-          <div className="grid md:grid-cols-2 gap-4">
-            <Card className="p-5 space-y-2">
-              <p className="text-sm text-slate-400">Primary Role</p>
-              <p className="text-2xl font-semibold">{capability.primaryRole}</p>
-              <p className="text-sm text-slate-400">
-                Suggested: {capability.suggestedRoles?.join(", ") || "—"}
-              </p>
-              <p className="text-lg font-semibold text-green-500">Rating: {capability.score.toFixed(1)} / 10</p>
-            </Card>
-            <Card className="p-5">
-              <h3 className="text-lg font-semibold mb-3">Coverage</h3>
-              <div className="h-48">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={capBarData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                    <XAxis dataKey="name" stroke="#cbd5e1" />
-                    <YAxis stroke="#cbd5e1" allowDecimals={false} />
-                    <Tooltip />
-                    <Bar dataKey="value" fill="#38bdf8" radius={[6, 6, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </Card>
-          </div>
-        ) : (
-          <p className="text-sm text-slate-400">Run the resume analysis to see role fit and gaps.</p>
-        )}
-      </div>
-
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Latest Analysis</h2>
-        {latest ? (
-          <>
-            <DashboardStats
-              matchScore={latest.matchScore ?? 0}
-              matchedSkills={latest.matchedSkills ?? []}
-              missingSkills={latest.missingSkills ?? []}
-            />
-            <div className="card p-6 space-y-4">
-              <h3 className="text-lg font-semibold">Coverage</h3>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={barData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" />
-                    <XAxis dataKey="name" stroke="#cbd5e1" />
-                    <YAxis stroke="#cbd5e1" allowDecimals={false} />
-                    <Tooltip />
-                    <Bar dataKey="value" fill="#38bdf8" radius={[6, 6, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-            <div className="card p-6 space-y-3">
-              <h3 className="text-lg font-semibold">AI Recommendations</h3>
-              <p className="text-slate-200 text-sm whitespace-pre-wrap">
-                {latest.aiRecommendations || "No recommendations available."}
-              </p>
-            </div>
-          </>
-        ) : (
-          <p className="text-slate-400 text-sm">No analyses yet.</p>
-        )}
-      </div>
-
-      <div className="card p-6 space-y-3">
-        <h2 className="text-xl font-semibold">Analysis History</h2>
-        {history.length === 0 && <p className="text-sm text-slate-400">No past analyses.</p>}
-        {history.map((h) => (
-          <div key={h.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border border-slate-800 rounded-lg px-3 py-2">
-            <div className="w-full">
-              <p className="text-sm font-semibold">{h.role}</p>
-              <p className="text-xs text-slate-400">{new Date(h.createdAt).toLocaleString()}</p>
-            </div>
-            <span className="text-sm font-semibold text-green-400 sm:text-right w-full sm:w-auto">
-              {h.matchScore?.toFixed ? h.matchScore.toFixed(1) : h.matchScore}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      {capability && (
-        <div className="grid md:grid-cols-2 gap-4">
-          <Card className="p-5 space-y-2">
-            <h3 className="text-lg font-semibold">Missing Hard Skills</h3>
-            <div className="flex flex-wrap gap-2">
-              {capability.missingSkills?.length ? (
-                capability.missingSkills.map((s) => (
-                  <span key={s} className="px-3 py-1 rounded-full bg-red-500 text-white text-xs">
-                    {s}
-                  </span>
-                ))
-              ) : (
-                <p className="text-sm text-slate-400">No hard skill gaps detected.</p>
-              )}
-            </div>
-          </Card>
-          <Card className="p-5 space-y-2">
-            <h3 className="text-lg font-semibold">Missing Soft Skills</h3>
-            <div className="flex flex-wrap gap-2">
-              {capability.missingSoftSkills?.length ? (
-                capability.missingSoftSkills.map((s) => (
-                  <span key={s} className="px-3 py-1 rounded-full bg-purple-500 text-white text-xs">
-                    {s}
-                  </span>
-                ))
-              ) : (
-                <p className="text-sm text-slate-400">No soft skill gaps detected.</p>
-              )}
-            </div>
-          </Card>
-        </div>
-      )}
-
-      <div className="card p-5 space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <h3 className="text-lg font-semibold">Missing Skill To-Do</h3>
-          {!capability && <span className="text-xs text-slate-500">Run analysis to refresh this list.</span>}
-        </div>
-        <div className="space-y-2">
-          {todos.length === 0 && <p className="text-sm text-slate-400">No to-do items yet.</p>}
-          {todos.map((t) => (
-            <div
-              key={t.id}
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border border-slate-800 rounded-lg px-3 py-2"
-            >
-              <span className="text-sm w-full">{t.name}</span>
-              <select
-                value={t.status}
-                onChange={(e) => updateTodoStatus(t.id, e.target.value as Todo["status"])}
-                className="text-xs rounded bg-slate-900 border border-slate-700 px-2 py-1 w-full sm:w-auto"
-              >
-                <option value="pending">pending</option>
-                <option value="in_progress">in progress</option>
-                <option value="done">done</option>
-              </select>
-            </div>
+      {loading ? (
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <ListingSkeleton key={i} />
           ))}
         </div>
-      </div>
+      ) : (
+        <>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card className="p-4 space-y-1">
+              <p className="text-xs text-muted">Tasks done</p>
+              <h3 className="text-2xl font-semibold">{todos.filter((t) => t.status === "done").length}</h3>
+              <p className="text-xs text-muted">of {todos.length} tasks</p>
+            </Card>
+            <Card className="p-4 space-y-1">
+              <p className="text-xs text-muted">Skills detected</p>
+              <h3 className="text-2xl font-semibold">{skills.length}</h3>
+            </Card>
+            <Card className="p-4 space-y-1">
+              <p className="text-xs text-muted">Latest match score</p>
+              <h3 className="text-2xl font-semibold">{latest?.matchScore ?? "—"}</h3>
+            </Card>
+            <Card className="p-4 space-y-1">
+              <p className="text-xs text-muted">Mentor requests</p>
+              <h3 className="text-2xl font-semibold">{history.length}</h3>
+            </Card>
+          </div>
 
-      <div className="space-y-3">
-        <h2 className="text-xl font-semibold">Market Trending Skills</h2>
-        <Card className="p-4 flex flex-wrap gap-3">
-          {trending.length ? (
-            trending.map((t) => (
-              <span key={t.name} className="px-3 py-1 rounded-full bg-accent/10 text-accent text-sm">
-                {t.name} · {t.jobs ?? t.demandScore ?? ""}
-              </span>
-            ))
-          ) : (
-            <p className="text-slate-400 text-sm">No market data yet.</p>
-          )}
-        </Card>
-      </div>
-    </div>
+          <div className="grid lg:grid-cols-3 gap-4">
+            <Card className="p-5 lg:col-span-2 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold">Match score trend</h3>
+                  <p className="text-xs text-muted">Recent analyses</p>
+                </div>
+                <Button variant="secondary" onClick={runCapabilityAnalysis} loading={capLoading}>
+                  Refresh analysis
+                </Button>
+              </div>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={trendLine}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+                    <XAxis dataKey="name" stroke="#94a3b8" />
+                    <YAxis stroke="#94a3b8" domain={[0, 100]} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="score" stroke="#6366f1" strokeWidth={2} dot={{ r: 3 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+
+            <Card className="p-5 space-y-3">
+              <h3 className="text-lg font-semibold">Skill coverage</h3>
+              <div className="h-48">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={barData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+                    <XAxis dataKey="name" stroke="#94a3b8" />
+                    <YAxis stroke="#94a3b8" allowDecimals={false} />
+                    <Tooltip />
+                    <Bar dataKey="value" fill="#22d3ee" radius={[6, 6, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+          </div>
+
+          <Card className="p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Tasks</h3>
+              <div className="flex gap-2 text-xs">
+                <Badge tone="neutral">Page {taskPage} / {totalPages}</Badge>
+              </div>
+            </div>
+            <div className="overflow-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-muted">
+                    <th className="px-3 py-2">Task</th>
+                    <th className="px-3 py-2">Status</th>
+                    <th className="px-3 py-2">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagedTodos.map((t) => (
+                    <tr key={t.id} className="border-t border-border">
+                      <td className="px-3 py-2">{t.name}</td>
+                      <td className="px-3 py-2"><Badge tone={t.status === "done" ? "success" : t.status === "pending" ? "warning" : "secondary"}>{t.status.replace("_", " ")}</Badge></td>
+                      <td className="px-3 py-2 text-right">
+                        <Button variant="secondary" onClick={() => updateTodoStatus(t.id, t.status === "done" ? "pending" : "done")}>Toggle</Button>
+                      </td>
+                    </tr>
+                  ))}
+                  {todos.length === 0 && (
+                    <tr><td colSpan={3} className="px-3 py-4 text-muted">No tasks yet.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+            {todos.length > pageSize && (
+              <div className="flex items-center justify-between text-xs text-muted pt-2">
+                <Button variant="secondary" onClick={() => setTaskPage(Math.max(1, taskPage - 1))} disabled={taskPage === 1}>Prev</Button>
+                <Button variant="secondary" onClick={() => setTaskPage(Math.min(totalPages, taskPage + 1))} disabled={taskPage === totalPages}>Next</Button>
+              </div>
+            )}
+          </Card>
+
+          <Card className="p-5 space-y-3">
+            <h3 className="text-lg font-semibold">Market trending skills</h3>
+            <div className="flex flex-wrap gap-2">
+              {trending.length ? trending.slice(0, 12).map((t) => (
+                <Badge key={t.name} tone="primary">{t.name}</Badge>
+              )) : <p className="text-sm text-muted">No market data yet.</p>}
+            </div>
+          </Card>
+        </>
+      )}
+    </DashboardShell>
   );
 }

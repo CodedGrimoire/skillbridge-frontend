@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import AdminLayout from "../../../components/layout/AdminLayout";
+import DashboardShell from "../../../components/dashboard/DashboardShell";
 import api from "../../../services/api";
 import { useAuth } from "../../../hooks/useAuth";
 import { Clock3, Users, Star } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
 type MentorRequest = {
   id: string;
@@ -62,8 +63,8 @@ export default function AdminDashboardPage() {
   };
 
   return (
-    <AdminLayout title="Mentor Dashboard">
-      <div className="space-y-10">
+    <DashboardShell role="ADMIN" title="Admin Overview">
+      <div className="space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <StatCard label="Pending Requests" value={pending.length} />
           <StatCard label="Active Mentees" value={accepted.length} />
@@ -72,6 +73,24 @@ export default function AdminDashboardPage() {
             value={profile?.rating ? `${profile.rating.toFixed(1)} ★ (${profile.reviewsCount ?? 0})` : "—"}
           />
         </div>
+
+        <CardBlock title="Request funnel" subtitle="Pending vs accepted vs denied">
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={[
+                { name: "Pending", value: pending.length },
+                { name: "Accepted", value: accepted.length },
+                { name: "Denied", value: requests.filter((r) => r.status === "denied").length },
+              ]}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+                <XAxis dataKey="name" stroke="#94a3b8" />
+                <YAxis stroke="#94a3b8" allowDecimals={false} />
+                <Tooltip />
+                <Bar dataKey="value" fill="#6366f1" radius={[6,6,0,0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </CardBlock>
 
         <div className="grid lg:grid-cols-2 gap-6">
           <CardBlock
@@ -185,7 +204,7 @@ export default function AdminDashboardPage() {
         </div>
         </CardBlock>
       </div>
-    </AdminLayout>
+    </DashboardShell>
   );
 }
 
