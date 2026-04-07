@@ -20,22 +20,23 @@ export default function Navbar() {
   ];
 
   const navItems =
-    user?.role === "ADMIN"
+    user?.role === "ADMIN" || user?.role === "MENTOR"
       ? [
           { href: "/admin/dashboard", label: "Dashboard" },
           { href: "/admin/users", label: "Users" },
-          { href: "/career-path", label: "Career" },
-          { href: "/market", label: "Market" },
           { href: "/mentor/tasks", label: "Tasks" },
           { href: "/mentor/courses", label: "Courses" },
+          { href: "/career-path", label: "Career Path" },
+          { href: "/market", label: "Market" },
+          { href: "/courses", label: "Courses" },
         ]
       : [
-          { href: "/dashboard", label: "Dashboard" },
-          { href: "/career-path", label: "Career" },
-          { href: "/market", label: "Market" },
-          { href: "/tasks", label: "Tasks" },
+          { href: "/", label: "Home" },
           { href: "/dashboard/mentors", label: "Mentors" },
           { href: "/courses", label: "Courses" },
+          { href: "/market", label: "Market" },
+          { href: "/career-path", label: "Career Path" },
+          { href: "/tasks", label: "Tasks" },
         ];
 
   return (
@@ -72,6 +73,20 @@ export default function Navbar() {
                   {item.label}
                 </Link>
               ))}
+
+              <details className="relative group">
+                <summary className="flex items-center gap-1 cursor-pointer text-muted hover:text-text list-none pb-1 border-b-2 border-transparent group-open:border-primary">
+                  Resources
+                  <ChevronDown className="h-4 w-4" />
+                </summary>
+                <div className="absolute right-0 mt-2 w-56 rounded-lg border border-border bg-card shadow-soft p-2 space-y-1 z-50">
+                  {[{ label: "Guides", href: "/market" }, { label: "FAQ", href: "#faq" }, { label: "Customer Stories", href: "#stories" }].map((item) => (
+                    <Link key={item.label} href={item.href} className="block px-3 py-2 rounded-md text-sm text-text hover:bg-primary/10">
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </details>
             </div>
 
             <div className="hidden md:flex items-center gap-3">
@@ -161,6 +176,25 @@ export default function Navbar() {
                   {item.label}
                 </Link>
               ))}
+
+              <details className="group">
+                <summary className="flex items-center gap-1 cursor-pointer text-text px-2 py-1 rounded hover:bg-primary/5 list-none">
+                  Resources
+                  <ChevronDown className="h-4 w-4 text-muted" />
+                </summary>
+                <div className="mt-2 grid gap-1 border border-border rounded-lg bg-card p-2">
+                  {[{ label: "Guides", href: "/market" }, { label: "FAQ", href: "#faq" }, { label: "Customer Stories", href: "#stories" }].map((item) => (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      className="px-3 py-2 rounded-md text-sm text-text hover:bg-primary/10"
+                      onClick={() => setOpen(false)}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              </details>
             </div>
 
             <div className="grid gap-3">

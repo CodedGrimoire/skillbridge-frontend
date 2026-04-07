@@ -105,6 +105,7 @@ a {
 .sb-badge-success { @apply bg-success/15 text-success; }
 .sb-badge-danger { @apply bg-danger/15 text-danger; }
 .sb-badge-warning { @apply bg-warning/15 text-warning; }
+.sb-badge-secondary { @apply bg-secondary/15 text-secondary; }
 
 .sb-table {
   @apply w-full overflow-hidden rounded-lg border border-border bg-card;

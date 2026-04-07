@@ -5,9 +5,11 @@ import classNames from "classnames";
 export default function SectionContainer({
   children,
   className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return <section className={classNames("sb-page", className)}>{children}</section>;
+  ...rest
+}: React.HTMLAttributes<HTMLElement>) {
+  return (
+    <section className={classNames("sb-page", className)} {...rest}>
+      {children}
+    </section>
+  );
 }
